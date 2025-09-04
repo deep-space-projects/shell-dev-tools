@@ -1,0 +1,41 @@
+version: 1.0.0
+
+metadata:
+  name: "platform"
+  description: "Cross-platform system utilities and user management"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    dependencies:
+      modules: [ logger, common ]
+
+    commands:
+      - name: "user-exists"
+        function: "platform_user_exists"
+        description: "Check if user exists"
+        usage: "user-exists <username>"
+
+      - name: "group-exists"
+        function: "platform_group_exists"
+        description: "Check if group exists"
+        usage: "group-exists <groupname>"
+
+      - name: "user-info"
+        function: "get_user_info"
+        description: "Get user information"
+        usage: "user-info <username>"
+
+      - name: "user-home"
+        function: "get_user_home"
+        description: "Get user home directory"
+        usage: "user-home <username>"
+
+      - name: "switch-user"
+        function: "platform_switch_user"
+        description: "Switch to user and execute command"
+        usage: "switch-user <username> <command>"
+
+    files:
+      - "platform-lib.sh"
