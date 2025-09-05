@@ -246,8 +246,8 @@ esac
 ### Системные модули
 
 **Системные модули dev-tools:**
-- `logger` - система логирования (log_info, log_warning, logger_set_level, etc.)
-- `common` - общие утилиты (handle_operation_error, set_error_policy, detect_os, etc.)
+- `logger` - система логирования (logger info, logger warning, logger_set_level, etc.)
+- `common` - общие утилиты (handle_operation_error_quite, set_error_policy, detect_os, etc.)
 - `platform` - системно-независимые функции (platform_user_exists, get_user_home, etc.)
 - `permissions` - управление правами доступа (setup_permissions с флагами)
 - `modules` - выполнение модулей (execute_module, execute_modules_in_directory)
@@ -263,7 +263,7 @@ esac
 - `1="SOFT"` - логирует ошибку и продолжает выполнение
 - `2="CUSTOM"` - настраиваемая обработка ошибок
 
-**Функция handle_operation_error:**
+**Функция handle_operation_error_quite:**
 - Используется во всех критических операциях
 - Принимает решение на основе установленной политики
 - Логирует через единую систему логирования

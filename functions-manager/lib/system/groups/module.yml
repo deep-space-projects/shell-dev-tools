@@ -1,0 +1,23 @@
+version: 1.0.0
+
+metadata:
+  name: "groups"
+  description: "Cross-platform system for groups management"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    dependencies:
+      modules: [ logger ]
+
+    commands:
+      # ---------------
+      # Group management
+      - name: "get-uid"
+        function: "get_group_uid"
+        description: "Get group uid"
+        usage: "groups get-uid <groupname>"
+
+    files:
+      - "groups-lib.sh"

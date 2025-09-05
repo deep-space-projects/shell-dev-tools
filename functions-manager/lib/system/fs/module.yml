@@ -1,0 +1,24 @@
+version: 1.0.0
+
+metadata:
+  name: "fs"
+  description: "Common utilities and platform detection functions"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    dependencies:
+      modules: [ logger ]
+
+    commands:
+      # ---------------
+      # Dirs
+      - name: "dir make-safe"
+        function: "safe_mkdir"
+        description: "Safely create directory"
+        usage: "dir make-safe <path> [owner] [permissions]"
+
+
+    files:
+      - "fs-lib.sh"
