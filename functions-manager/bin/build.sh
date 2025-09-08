@@ -41,23 +41,6 @@ Examples:
 EOF
 }
 
-# В начале скрипта
-rerun_as_root() {
-    if [[ "$privileged" == true && "$(id -u)" -ne 0 ]]; then
-        if command -v sudo >/dev/null 2>&1; then
-            exec sudo "$0" "$@"
-        elif command -v su >/dev/null 2>&1; then
-            exec su -c "$0 $*"
-        else
-            echo "Administrative privileges required. Please run as root"
-            exit 1
-        fi
-    fi
-}
-
-# Вызвать в начале main
-rerun_as_root "$@"
-
 # Главная функция сборки
 build_dev_tools() {
     local output_path="/usr/local/bin/fman"
@@ -125,6 +108,24 @@ build_dev_tools() {
     # Установка verbose режима
     if [[ "$verbose" == true ]]; then
         logger_set_level DEBUG
+    fi
+
+    # Проверка и подсказка как запустить
+    if [[ "$privileged" == true ]]; then
+        if [[ "$EUID" -ne 0 ]]; then
+            log_error "Root privileges required for this operation"
+
+            # Проверяем доступен ли sudo
+            if command -v sudo >/dev/null 2>&1; then
+                log_info "Please run: sudo $0 $*"
+            else
+                log_info "Please run as root user"
+            fi
+
+            exit 1
+        else
+            log_debug "Root privileges confirmed"
+        fi
     fi
 
     log_header "Building Dev-Tools System"
