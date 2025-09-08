@@ -63,7 +63,7 @@ install_single_module() {
     # Удаляем существующую установку если есть
     if [[ -e "$target_module_dir" ]]; then
         log_debug "Removing existing installation: $target_module_dir"
-        if ! sudo rm -rf "$target_module_dir" 2>/dev/null; then
+        if ! rm -rf "$target_module_dir" 2>/dev/null; then
             log_error "Failed to remove existing installation: $target_module_dir"
             return 1
         fi
@@ -71,7 +71,7 @@ install_single_module() {
 
     # Создаем целевую директорию модуля
     log_debug "Creating target directory: $target_module_dir"
-    if ! sudo mkdir -p "$target_module_dir" 2>/dev/null; then
+    if ! mkdir -p "$target_module_dir" 2>/dev/null; then
         log_error "Failed to create target directory: $target_module_dir"
         return 1
     fi
@@ -81,7 +81,7 @@ install_single_module() {
 
     # Копируем bin директорию
     if [[ -d "$module_temp_dir/bin" ]]; then
-        if ! sudo cp -r "$module_temp_dir/bin" "$target_module_dir/" 2>/dev/null; then
+        if ! cp -r "$module_temp_dir/bin" "$target_module_dir/" 2>/dev/null; then
             log_error "Failed to copy bin directory for module: $module_name"
             return 1
         fi
@@ -90,7 +90,7 @@ install_single_module() {
 
     # Копируем lib директорию
     if [[ -d "$module_temp_dir/lib" ]]; then
-        if ! sudo cp -r "$module_temp_dir/lib" "$target_module_dir/" 2>/dev/null; then
+        if ! cp -r "$module_temp_dir/lib" "$target_module_dir/" 2>/dev/null; then
             log_error "Failed to copy lib directory for module: $module_name"
             return 1
         fi
@@ -103,7 +103,7 @@ install_single_module() {
             local file_name=$(basename "$extra_file")
             # Пропускаем служебные файлы
             if [[ "$file_name" != .module-* ]]; then
-                if ! sudo cp "$extra_file" "$target_module_dir/" 2>/dev/null; then
+                if ! cp "$extra_file" "$target_module_dir/" 2>/dev/null; then
                     log_warning "Failed to copy extra file: $file_name"
                 else
                     log_debug "Copied extra file: $file_name"
