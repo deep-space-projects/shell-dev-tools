@@ -269,7 +269,7 @@ clean_previous_installation() {
 
 # Подготовка среды сборки
 prepare_build_environment() {
-    local temp_dir="/tmp/functions-manager-build-$USER-$$"
+    local temp_dir="/tmp/functions-manager-build-$(whoami)-$$"
 
     log_debug "Creating temporary build directory: $temp_dir"
 
