@@ -11,7 +11,7 @@ generators_generate() {
     log_debug "Starting module generation"
 
     # Создаем временную директорию для генерации
-    local temp_dir="/tmp/dev-tools-install-$USER-$$"
+    local temp_dir="/tmp/dev-tools-install-$(whoami)-$$"
     log_info "Creating temporary directory: $temp_dir"
 
     if ! safe_mkdir "$temp_dir" "" "755"; then
