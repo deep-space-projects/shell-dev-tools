@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Dev-Tools Builder
+# Functions-Manager Builder
 # Builds and installs functions-manager system from sources
 # ============================================================================
 
@@ -40,6 +40,23 @@ Examples:
 
 EOF
 }
+
+# В начале скрипта
+rerun_as_root() {
+    if [[ "$privileged" == true && "$(id -u)" -ne 0 ]]; then
+        if command -v sudo >/dev/null 2>&1; then
+            exec sudo "$0" "$@"
+        elif command -v su >/dev/null 2>&1; then
+            exec su -c "$0 $*"
+        else
+            echo "Administrative privileges required. Please run as root"
+            exit 1
+        fi
+    fi
+}
+
+# Вызвать в начале main
+rerun_as_root "$@"
 
 # Главная функция сборки
 build_dev_tools() {
@@ -108,17 +125,6 @@ build_dev_tools() {
     # Установка verbose режима
     if [[ "$verbose" == true ]]; then
         logger_set_level DEBUG
-    fi
-
-    # Запрос прав администратора если нужно
-    if [[ "$privileged" == true ]]; then
-        if ! sudo -n true 2>/dev/null; then
-            log_info "Requesting administrative privileges..."
-            sudo -v || {
-                log_error "Administrative privileges required"
-                exit 1
-            }
-        fi
     fi
 
     log_header "Building Dev-Tools System"
