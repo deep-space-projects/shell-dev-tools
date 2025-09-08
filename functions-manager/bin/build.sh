@@ -29,7 +29,7 @@ OPTIONS:
   --verbose, -v             Enable debug logging
   --interactive             Interactive mode - ask for confirmations
   --daemon                  Daemon mode - no user interaction
-  --privileged              Request sudo privileges upfront
+  --privileged              Request privileges upfront
   --clean                   Clean previous installation before building
   --help, -h                Show this help message
 
@@ -116,8 +116,8 @@ build_dev_tools() {
             log_error "Root privileges required for this operation"
 
             # Проверяем доступен ли sudo
-            if command -v sudo >/dev/null 2>&1; then
-                log_info "Please run: sudo $0 $*"
+            if command -v >/dev/null 2>&1; then
+                log_info "Please run: $0 $*"
             else
                 log_info "Please run as root user"
             fi
@@ -249,7 +249,7 @@ clean_previous_installation() {
     # Удаляем исполняемый файл
     if [[ -f "$output_path" ]]; then
         log_debug "Removing previous binary: $output_path"
-        if ! sudo rm -f "$output_path" 2>/dev/null; then
+        if ! rm -f "$output_path" 2>/dev/null; then
             log_error "Failed to remove previous binary: $output_path"
             return 1
         fi
@@ -258,7 +258,7 @@ clean_previous_installation() {
     # Удаляем библиотеки
     if [[ -d "$lib_dir" ]]; then
         log_debug "Removing previous libraries: $lib_dir"
-        if ! sudo rm -rf "$lib_dir" 2>/dev/null; then
+        if ! rm -rf "$lib_dir" 2>/dev/null; then
             log_error "Failed to remove previous libraries: $lib_dir"
             return 1
         fi
@@ -393,7 +393,7 @@ install_functions_manager() {
 
     # Создаем целевую директорию lib
     local lib_parent_dir=$(dirname "$lib_dir")
-    if ! sudo mkdir -p "$lib_parent_dir" 2>/dev/null; then
+    if ! mkdir -p "$lib_parent_dir" 2>/dev/null; then
         log_error "Failed to create parent directory: $lib_parent_dir"
         return 1
     fi
@@ -401,21 +401,21 @@ install_functions_manager() {
     # Удаляем старую установку если есть
     if [[ -d "$lib_dir" ]]; then
         log_debug "Removing existing installation: $lib_dir"
-        if ! sudo rm -rf "$lib_dir" 2>/dev/null; then
+        if ! rm -rf "$lib_dir" 2>/dev/null; then
             log_error "Failed to remove existing installation: $lib_dir"
             return 1
         fi
     fi
 
     # Копируем всю структуру (lib + bin) в целевую директорию
-    if ! sudo cp -r "$temp_dir" "$lib_dir" 2>/dev/null; then
+    if ! cp -r "$temp_dir" "$lib_dir" 2>/dev/null; then
         log_error "Failed to install functions-manager structure to: $lib_dir"
         return 1
     fi
 
     # Создаем родительскую директорию для симлинка
     local bin_parent_dir=$(dirname "$output_path")
-    if ! sudo mkdir -p "$bin_parent_dir" 2>/dev/null; then
+    if ! mkdir -p "$bin_parent_dir" 2>/dev/null; then
         log_error "Failed to create binary directory: $bin_parent_dir"
         return 1
     fi
@@ -423,7 +423,7 @@ install_functions_manager() {
     # Удаляем старый симлинк если есть
     if [[ -L "$output_path" ]]; then
         log_debug "Removing existing symlink: $output_path"
-        if ! sudo rm -f "$output_path" 2>/dev/null; then
+        if ! rm -f "$output_path" 2>/dev/null; then
             log_error "Failed to remove existing symlink: $output_path"
             return 1
         fi
@@ -434,7 +434,7 @@ install_functions_manager() {
 
     # Создаем симлинк на исполняемый файл
     local source_binary="$lib_dir/bin/functions-manager.sh"
-    if ! sudo ln -s "$source_binary" "$output_path" 2>/dev/null; then
+    if ! ln -s "$source_binary" "$output_path" 2>/dev/null; then
         log_error "Failed to create symlink: $output_path -> $source_binary"
         return 1
     fi
