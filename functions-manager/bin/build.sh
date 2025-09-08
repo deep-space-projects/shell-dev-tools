@@ -320,6 +320,7 @@ source "\${LIB_DIR}/system/env/env-lib.sh"
 source "\${LIB_DIR}/system/operations/operations-lib.sh"
 source "\${LIB_DIR}/system/commands/commands-lib.sh"
 source "\${LIB_DIR}/system/fs/fs-lib.sh"
+source "\${LIB_DIR}/system/os/os-lib.sh"
 
 #source "\${LIB_DIR}/system/common/common-lib.sh"
 #source "\${LIB_DIR}/system/platform/platform-lib.sh"
