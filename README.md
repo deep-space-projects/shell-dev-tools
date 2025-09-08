@@ -1,4 +1,4 @@
-# AI_CONTEXT.md
+# README.md
 
 ## Описание проекта
 
@@ -20,6 +20,11 @@
 3. Управляет зависимостями и валидацией модулей
 4. Поддерживает гибкие политики обработки ошибок
 5. Генерирует dispatcher'ы для команд модулей
+
+## Установка
+
+```shell
+REPO="deep-space-projects/shell-dev-tools" BRANCH="main" BUILD_DIR="build" && wget -qO $BRANCH.zip  https://github.com/$REPO/archive/refs/heads/$BRANCH.zip  && unzip -q $BRANCH.zip -d $DIR && bash $BUILD_DIR/shell-dev-tools-$BRANCH/functions-manager/bin/build.sh --privileged --daemon && rm -rf $BUILD_DIR && rm -f $BRANCH.zip && fman install --system --daemon```
 
 ## Архитектура
 
