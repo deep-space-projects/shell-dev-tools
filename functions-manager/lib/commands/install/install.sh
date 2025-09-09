@@ -1,5 +1,7 @@
 #!/bin/bash
 
+TEMP_DIR=""
+
 ##
 # Парсит аргументы командной строки и устанавливает соответствующие переменные
 #
@@ -521,6 +523,9 @@ install() {
         return 9
     fi
 
+    # Очистка временной директории при выходе
+    trap "rm -rf '$temp_dir'" EXIT
+
     # Подтверждение и установка
     if ! request_installation_confirmation "$validated_modules"; then
         log_info "Installation cancelled"
@@ -535,9 +540,6 @@ install() {
     log_success "Installation process completed successfully"
     return 0
 }
-
-# Очистка временной директории при выходе
-trap "rm -rf '$temp_dir'" EXIT
 
 # Запуск установки с переданными аргументами
 install "$@"
