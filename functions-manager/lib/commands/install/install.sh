@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# Глобальные переменные
+module_dirs=""
+system=false
+recursive=false
+verbose=false
+interactive=false
+daemon=false
+privileged=false
+error_policy="strict"
+github=false
+repo=""
+branch="main"
+
 ##
 # Парсит аргументы командной строки и устанавливает соответствующие переменные
 #
@@ -15,7 +28,7 @@
 # @global github - флаг загрузки модулей из GitHub
 # @global repo - название GitHub репозитория
 # @global branch - название ветки GitHub репозитория
-# @return 0 при успехе, 1 при неизвестном параметре
+# @return 0 при успехе, выход с кодом 1 при неизвестном параметре
 ##
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
@@ -66,11 +79,10 @@ parse_arguments() {
                 ;;
             *)
                 log_error "Unknown option: $1"
-                return 1
+                exit 1
                 ;;
         esac
     done
-    return 0
 }
 
 ##
@@ -87,30 +99,28 @@ parse_arguments() {
 # @global repo - название репозитория
 # @global system - флаг системных модулей
 # @global module_dirs - пути к директориям модулей
-# @return 0 при успехе, 1-4 при различных ошибках валидации
+# @return выход с кодом 1 при ошибке валидации
 ##
 validate_arguments() {
     if [[ "$interactive" == false && "$daemon" == false ]]; then
         log_error "Must specify either --interactive or --daemon"
-        return 1
+        exit 1
     fi
 
     if [[ "$interactive" == true && "$daemon" == true ]]; then
         log_error "Cannot specify both --interactive and --daemon"
-        return 2
+        exit 1
     fi
 
     if [[ "$github" == true && -z "$repo" ]]; then
         log_error "Must specify --repo when using --github"
-        return 3
+        exit 1
     fi
 
     if [[ "$system" == false && -z "$module_dirs" && "$github" == false ]]; then
         log_error "Must specify either --system, --module-dirs, or --github"
-        return 4
+        exit 1
     fi
-
-    return 0
 }
 
 ##
@@ -124,7 +134,7 @@ validate_arguments() {
 # @global verbose - флаг детального вывода
 # @global privileged - флаг административных прав
 # @global error_policy - политика обработки ошибок
-# @return 0 при успехе, 1 при ошибке получения прав администратора
+# @return выход с кодом 1 при ошибке получения прав администратора
 ##
 initialize_environment() {
     # Установка verbose режима
@@ -136,16 +146,15 @@ initialize_environment() {
     if [[ "$privileged" == true ]]; then
         if ! sudo -n true 2>/dev/null; then
             log_info "Requesting administrative privileges..."
-            if ! sudo -v; then
+            sudo -v || {
                 log_error "Administrative privileges required"
-                return 1
-            fi
+                exit 1
+            }
         fi
     fi
 
     # Установка политики ошибок
     set_error_policy "$error_policy"
-    return 0
 }
 
 ##
@@ -157,28 +166,14 @@ initialize_environment() {
 # - requirements-resolver.sh - для разрешения зависимостей
 #
 # @global LIB_DIR - путь к директории библиотек
-# @return 0 при успехе, 1 при ошибке загрузки любого компонента
+# @return выход с кодом 1 при ошибке загрузки любого компонента
 ##
 load_core_components() {
     log_step 1 "Loading core components"
-
-    if ! source "${LIB_DIR}/core/scanner.sh"; then
-        log_error "Failed to load scanner.sh"
-        return 1
-    fi
-
-    if ! source "${LIB_DIR}/core/yaml.sh"; then
-        log_error "Failed to load yaml.sh"
-        return 1
-    fi
-
-    if ! source "${LIB_DIR}/core/requirements-resolver.sh"; then
-        log_error "Failed to load requirements-resolver.sh"
-        return 1
-    fi
-
+    source "${LIB_DIR}/core/scanner.sh"
+    source "${LIB_DIR}/core/yaml.sh"
+    source "${LIB_DIR}/core/requirements-resolver.sh"
     log_success "Core components loaded"
-    return 0
 }
 
 ##
@@ -189,13 +184,12 @@ load_core_components() {
 # - Загружает архив репозитория с GitHub
 # - Извлекает архив
 # - Добавляет извлеченную директорию к списку директорий модулей
-# - Настраивает очистку временных файлов
 #
 # @global github - флаг загрузки из GitHub
 # @global repo - название репозитория (формат: owner/repo)
 # @global branch - название ветки
 # @global module_dirs - пути к директориям модулей (обновляется)
-# @return 0 при успехе или если GitHub не используется, 1-4 при различных ошибках
+# @return выход с кодом 1 при различных ошибках
 ##
 download_github_modules() {
     if [[ "$github" == false ]]; then
@@ -206,10 +200,7 @@ download_github_modules() {
 
     # Создаем временную директорию
     local github_temp_dir="/tmp/dev-tools-install-$(whoami)-$$/vcs/github/${repo}/${branch}"
-    if ! mkdir -p "$github_temp_dir"; then
-        log_error "Failed to create temporary directory: $github_temp_dir"
-        return 1
-    fi
+    mkdir -p "$github_temp_dir"
 
     local zip_file="${github_temp_dir}/${branch}.zip"
     local download_url="https://github.com/${repo}/archive/refs/heads/${branch}.zip"
@@ -217,13 +208,13 @@ download_github_modules() {
     log_info "Downloading from: $download_url"
     if ! wget -qO "$zip_file" "$download_url"; then
         log_error "Failed to download from GitHub repository: $repo (branch: $branch)"
-        return 2
+        exit 1
     fi
 
     log_info "Extracting archive..."
     if ! unzip -q "$zip_file" -d "$github_temp_dir"; then
         log_error "Failed to extract downloaded archive"
-        return 3
+        exit 1
     fi
 
     # Удаляем zip файл после извлечения
@@ -239,11 +230,10 @@ download_github_modules() {
         fi
     else
         log_error "Could not find extracted repository directory"
-        return 4
+        exit 1
     fi
 
     log_success "GitHub repository downloaded and extracted"
-    return 0
 }
 
 ##
@@ -252,7 +242,7 @@ download_github_modules() {
 # @global module_dirs - пути к директориям модулей
 # @global system - флаг системных модулей
 # @global recursive - флаг рекурсивного поиска
-# @return 0 при успехе, 1 при ошибке сканирования, 2 при отсутствии модулей
+# @return выход с кодом 1 при ошибке сканирования, 0 при отсутствии модулей
 # @stdout список найденных модулей (по одному на строку)
 ##
 scan_modules() {
@@ -260,13 +250,13 @@ scan_modules() {
     local modules_list
     if ! modules_list=$(scanner_find_modules "$module_dirs" "$system" "$recursive"); then
         log_error "Failed to find modules"
-        return 1
+        exit 1
     fi
 
     local module_count=$(echo "$modules_list" | wc -l)
     if [[ -z "$modules_list" || "$module_count" -eq 0 ]]; then
         log_warning "No modules found for installation"
-        return 2
+        exit 0
     fi
 
     log_success "Found $module_count modules"
@@ -281,7 +271,6 @@ scan_modules() {
     done <<< "$modules_list"
 
     echo "$modules_list"
-    return 0
 }
 
 ##
@@ -289,24 +278,18 @@ scan_modules() {
 #
 # @param $1 - список модулей для проверки (по одному на строку)
 # @global install_dir - путь к директории команды install
-# @return 0 при успехе, 1 при неудовлетворенных требованиях
+# @return выход с кодом 1 при неудовлетворенных требованиях
 ##
 check_prerequisites() {
     local modules_list="$1"
 
     log_step 3 "Checking prerequisites"
-    if ! source "${install_dir}/prerequisites/check.sh"; then
-        log_error "Failed to load prerequisites checker"
-        return 1
-    fi
-
+    source "${install_dir}/prerequisites/check.sh"
     if ! prerequisites_check "$modules_list"; then
         log_error "Prerequisites check failed"
-        return 1
+        exit 1
     fi
-
     log_success "Prerequisites check passed"
-    return 0
 }
 
 ##
@@ -314,33 +297,28 @@ check_prerequisites() {
 #
 # @param $1 - список модулей для валидации (по одному на строку)
 # @global install_dir - путь к директории команды install
-# @return 0 при успехе, 1-2 при различных ошибках валидации
+# @return выход с кодом 1 при ошибке валидации
 # @stdout список валидированных модулей (по одному на строку)
 ##
 validate_modules() {
     local modules_list="$1"
 
     log_step 4 "Validating modules"
-    if ! source "${install_dir}/validators/validation.sh"; then
-        log_error "Failed to load validators"
-        return 1
-    fi
-
+    source "${install_dir}/validators/validation.sh"
     local validated_modules
     if ! validated_modules=$(validators_validate "$modules_list"); then
         log_error "Module validation failed"
-        return 1
+        exit 1
     fi
 
     local validated_count=$(echo "$validated_modules" | wc -l)
     if [[ -z "$validated_modules" || "$validated_count" -eq 0 ]]; then
         log_error "No modules passed validation"
-        return 2
+        exit 1
     fi
-
     log_success "Validated $validated_count modules"
+
     echo "$validated_modules"
-    return 0
 }
 
 ##
@@ -348,26 +326,22 @@ validate_modules() {
 #
 # @param $1 - список валидированных модулей (по одному на строку)
 # @global install_dir - путь к директории команды install
-# @return 0 при успехе, 1 при ошибке загрузки генератора, 2 при ошибке генерации
+# @return выход с кодом 1 при ошибке генерации
 # @stdout путь к временной директории с сгенерированными файлами
 ##
 generate_modules() {
     local validated_modules="$1"
 
     log_step 5 "Generating modules"
-    if ! source "${install_dir}/generators/generator.sh"; then
-        log_error "Failed to load generator"
-        return 1
-    fi
-
+    source "${install_dir}/generators/generator.sh"
     local temp_dir
     if ! temp_dir=$(generators_generate "$validated_modules"); then
         log_error "Module generation failed"
-        return 2
+        exit 1
     fi
-
     log_success "Modules generated in: $temp_dir"
-    return 0
+
+    echo "$temp_dir"
 }
 
 ##
@@ -375,7 +349,7 @@ generate_modules() {
 #
 # @param $1 - список модулей для установки (по одному на строку)
 # @global interactive - флаг интерактивного режима
-# @return 0 при подтверждении или неинтерактивном режиме, 1 при отказе пользователя
+# @return выход с кодом 0 при отказе пользователя
 ##
 request_installation_confirmation() {
     local validated_modules="$1"
@@ -395,10 +369,8 @@ request_installation_confirmation() {
     read -r response
     if [[ "$response" != [yY] && "$response" != [yY][eE][sS] ]]; then
         log_info "Installation cancelled by user"
-        return 1
+        exit 0
     fi
-
-    return 0
 }
 
 ##
@@ -407,21 +379,17 @@ request_installation_confirmation() {
 # @param $1 - путь к временной директории с подготовленными модулями
 # @param $2 - список валидированных модулей (по одному на строку)
 # @global install_dir - путь к директории команды install
-# @return 0 при успехе, 1-2 при различных ошибках установки
+# @return выход с кодом 1 при ошибке установки
 ##
 install_modules() {
     local temp_dir="$1"
     local validated_modules="$2"
 
     log_step 6 "Installing modules"
-    if ! source "${install_dir}/linker/linker.sh"; then
-        log_error "Failed to load linker"
-        return 1
-    fi
-
+    source "${install_dir}/linker/linker.sh"
     if ! linker_install "$temp_dir" "$validated_modules"; then
         log_error "Module installation failed"
-        return 2
+        exit 1
     fi
 
     local validated_count=$(echo "$validated_modules" | wc -l)
@@ -433,8 +401,6 @@ install_modules() {
         local module_name=$(basename "$module_path")
         log_info "  ✓ $module_name"
     done <<< "$validated_modules"
-
-    return 0
 }
 
 ##
@@ -448,38 +414,15 @@ install_modules() {
 # - Генерацию и установку
 #
 # @param $@ - аргументы командной строки
-# @return 0 при успешной установке, выход с соответствующим кодом ошибки при неудаче
+# @return выход с кодом ошибки при неудаче
 ##
 install() {
-    # Инициализация переменных со значениями по умолчанию
-    local module_dirs=""
-    local system=false
-    local recursive=false
-    local verbose=false
-    local interactive=false
-    local daemon=false
-    local privileged=false
-    local error_policy="strict"
-    local github=false
-    local repo=""
-    local branch="main"
-
     # Парсинг и валидация аргументов
-    if ! parse_arguments "$@"; then
-        log_error "Failed to parse arguments"
-        return 1
-    fi
-
-    if ! validate_arguments; then
-        log_error "Arguments validation failed"
-        return 2
-    fi
+    parse_arguments "$@"
+    validate_arguments
 
     # Инициализация среды
-    if ! initialize_environment; then
-        log_error "Environment initialization failed"
-        return 3
-    fi
+    initialize_environment
 
     log_header "Starting Module Installation"
 
@@ -487,56 +430,27 @@ install() {
     local install_dir="${LIB_DIR}/commands/install"
 
     # Загрузка и подготовка
-    if ! load_core_components; then
-        log_error "Failed to load core components"
-        return 4
-    fi
-
-    if ! download_github_modules; then
-        log_error "Failed to download GitHub modules"
-        return 5
-    fi
+    load_core_components
+    download_github_modules
 
     # Поиск и обработка модулей
     local modules_list
-    if ! modules_list=$(scan_modules); then
-        log_error "Failed to scan modules"
-        return 6
-    fi
+    modules_list=$(scan_modules)
 
-    if ! check_prerequisites "$modules_list"; then
-        log_error "Prerequisites check failed"
-        return 7
-    fi
+    check_prerequisites "$modules_list"
 
     local validated_modules
-    if ! validated_modules=$(validate_modules "$modules_list"); then
-        log_error "Module validation failed"
-        return 8
-    fi
+    validated_modules=$(validate_modules "$modules_list")
 
     local temp_dir
-    if ! temp_dir=$(generate_modules "$validated_modules"); then
-        log_error "Module generation failed"
-        return 9
-    fi
+    temp_dir=$(generate_modules "$validated_modules")
 
     # Очистка временной директории при выходе
     trap "rm -rf '$temp_dir'" EXIT
 
     # Подтверждение и установка
-    if ! request_installation_confirmation "$validated_modules"; then
-        log_info "Installation cancelled"
-        return 0  # Не ошибка, пользователь отменил
-    fi
-
-    if ! install_modules "$temp_dir" "$validated_modules"; then
-        log_error "Module installation failed"
-        return 10
-    fi
-
-    log_success "Installation process completed successfully"
-    return 0
+    request_installation_confirmation "$validated_modules"
+    install_modules "$temp_dir" "$validated_modules"
 }
 
 # Запуск установки с переданными аргументами
