@@ -119,7 +119,7 @@ declare -A ERROR_POLICY_NAMES=(
 
 # Получение текущей политики ошибок как строки
 get_current_error_policy() {
-    local policy="${ERROR_POLICY:-$ERROR_POLICY_STRICT}"
+    local policy="${ERROR_POLICY:-0}"
     echo $(get_error_policy_name_by_code $policy)
 }
 
