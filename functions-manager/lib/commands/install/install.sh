@@ -211,9 +211,6 @@ download_github_modules() {
         return 1
     fi
 
-    # Очистка GitHub временной директории при выходе
-    trap "rm -rf '/tmp/dev-tools-install-$(whoami)-$$'" EXIT
-
     local zip_file="${github_temp_dir}/${branch}.zip"
     local download_url="https://github.com/${repo}/archive/refs/heads/${branch}.zip"
 
