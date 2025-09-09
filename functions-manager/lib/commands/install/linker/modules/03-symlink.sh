@@ -51,7 +51,7 @@ main() {
     fi
 
     # Проверяем что все созданные симлинки работают
-    if ! validate_created_symlinks "${created_symlinks[@]}"; then
+    if ! validate_created_symlinks "$target_bin_dir" "${created_symlinks[@]}"; then
         log_error "Symlink validation failed"
         return 1
     fi
@@ -120,11 +120,12 @@ create_module_symlink() {
 
 # Валидация всех созданных симлинков
 validate_created_symlinks() {
+    local target_bin_dir="$1"
+    shift
     local created_symlinks=("$@")
 
     log_debug "Validating created symlinks"
 
-    local target_bin_dir="/usr/local/bin"
     local validation_errors=()
 
     for module_name in "${created_symlinks[@]}"; do
