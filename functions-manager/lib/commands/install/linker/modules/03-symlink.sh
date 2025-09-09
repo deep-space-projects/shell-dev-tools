@@ -85,7 +85,7 @@ create_module_symlink() {
     # Удаляем существующий симлинк если есть
     if [[ -L "$target_symlink" ]]; then
         log_debug "Removing existing symlink: $target_symlink"
-        if ! sudo rm -f "$target_symlink" 2>/dev/null; then
+        if ! rm -f "$target_symlink" 2>/dev/null; then
             log_error "Failed to remove existing symlink: $target_symlink"
             return 1
         fi
@@ -96,7 +96,7 @@ create_module_symlink() {
 
     # Создаем новый симлинк
     log_debug "Creating symlink: $target_symlink -> $source_script"
-    if ! sudo ln -s "$source_script" "$target_symlink" 2>/dev/null; then
+    if ! ln -s "$source_script" "$target_symlink" 2>/dev/null; then
         log_error "Failed to create symlink: $target_symlink -> $source_script"
         return 1
     fi
