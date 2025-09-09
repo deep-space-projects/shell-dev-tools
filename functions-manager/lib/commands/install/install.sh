@@ -367,11 +367,6 @@ generate_modules() {
     fi
 
     log_success "Modules generated in: $temp_dir"
-
-    # Очистка временной директории при выходе
-    trap "rm -rf '$temp_dir'" EXIT
-
-    echo "$temp_dir"
     return 0
 }
 
@@ -540,6 +535,9 @@ install() {
     log_success "Installation process completed successfully"
     return 0
 }
+
+# Очистка временной директории при выходе
+trap "rm -rf '$temp_dir'" EXIT
 
 # Запуск установки с переданными аргументами
 install "$@"
