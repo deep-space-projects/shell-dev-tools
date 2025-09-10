@@ -23,11 +23,11 @@ handle_operation_result() {
                 shift
                 ;;
             --exit-code=*)
-                exit_code="${1#*=:}"
+                exit_code="${1#*=}"
                 shift
                 ;;
             --error-policy=*)
-                error_policy="${1#*=:}"
+                error_policy="${1#*=}"
                 shift
                 ;;
             *)
