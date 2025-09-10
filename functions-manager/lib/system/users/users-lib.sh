@@ -49,29 +49,11 @@ is_user_exists() {
 
     if [[ -z "$username" ]]; then
         log_error "Username is required"
-        return 2
+        return 1
     fi
 
-    # Метод 1: через getent (если доступен)
-    if command -v getent >/dev/null 2>&1; then
-        getent passwd "$username" >/dev/null 2>&1
-        return $?
-    fi
-
-    # Метод 2: через /etc/passwd
-    if [[ -f /etc/passwd ]]; then
-        grep -q "^${username}:" /etc/passwd 2>/dev/null
-        return $?
-    fi
-
-    # Метод 3: через id команду
-    if command -v id >/dev/null 2>&1; then
-        id "$username" >/dev/null 2>&1
-        return $?
-    fi
-
-    log_warning "No method available to check user existence"
-    return 2
+    get_user_uid $username
+    return $?
 }
 
 # Подготовка окружения для пользователя

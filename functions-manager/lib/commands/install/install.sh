@@ -442,10 +442,9 @@ install() {
     local validated_modules
     validated_modules=$(validate_modules "$modules_list")
 
+    # Создание и Очистка временной директории при выходе
     local temp_dir
     temp_dir=$(generate_modules "$validated_modules")
-
-    # Очистка временной директории при выходе
     trap "rm -rf '$temp_dir'" EXIT
 
     # Подтверждение и установка
