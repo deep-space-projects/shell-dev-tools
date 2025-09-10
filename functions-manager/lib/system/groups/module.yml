@@ -19,5 +19,11 @@ specification:
         description: "Get group uid"
         usage: "groups get-uid <groupname>"
 
+      # Group management
+      - name: "exists"
+        function: "is_group_exists"
+        description: "Is group exists"
+        usage: "groups exists <groupname>"
+
     files:
       - "groups-lib.sh"

@@ -34,3 +34,16 @@ get_group_uid() {
     log_error "Cannot determine GID for group: $groupname"
     return 1
 }
+
+# Проверка существования пользователя (кроссплатформенная)
+is_group_exists() {
+    local groupname="$1"
+
+    if [[ -z "$groupname" ]]; then
+        log_error "Group name is required"
+        return 1
+    fi
+
+    get_group_uid $groupname
+    return $?
+}
