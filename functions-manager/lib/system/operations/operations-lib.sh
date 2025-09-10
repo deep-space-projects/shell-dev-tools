@@ -7,7 +7,7 @@
 # Обработка ошибок согласно политике EXEC_ERROR_POLICY
 handle_operation_result() {
     local operation_name="Operation"
-    local error_message="${2:-Operation failed}"
+    local error_message="Operation failed"
     local exit_code=1
     local error_policy=$(get_current_error_policy)
 
@@ -31,11 +31,17 @@ handle_operation_result() {
                 shift
                 ;;
             *)
-                log_error "Unknow parameters: $@"
+                log_error "Unknown parameter: $1"
                 exit 1
                 ;;
         esac
     done
+
+    # Убеждаемся что exit_code это число
+    if ! [[ "$exit_code" =~ ^[0-9]+$ ]]; then
+        log_error "Invalid exit code: $exit_code"
+        exit_code=1
+    fi
 
 
     case "$error_policy" in
