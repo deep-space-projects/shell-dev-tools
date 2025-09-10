@@ -14,19 +14,19 @@ handle_operation_result() {
     # Парсим именованные параметры
     while [[ $# -gt 0 ]]; do
         case $1 in
-            -o|--operation=*)
+            --operation=*)
                 operation_name="${1#*=}"
                 shift
                 ;;
-            -e|--error-message=*)
+            --error-message=*)
                 error_message="${1#*=}"
                 shift
                 ;;
-            -c|--exit-code=*)
+            --exit-code=*)
                 exit_code="${1#*=:}"
                 shift
                 ;;
-            -e|--error-policy=*)
+            --error-policy=*)
                 error_policy="${1#*=:}"
                 shift
                 ;;
@@ -63,9 +63,6 @@ handle_operation_result() {
 }
 
 handle_operation_error_quite() {
-  handle_operation_result \
-        --operation="$1" \
-        --error-message="$2" \
-        --exit-code="$3"
+  handle_operation_result --operation="$1" --error-message="$2" --exit-code="$3"
   return $?
 }
