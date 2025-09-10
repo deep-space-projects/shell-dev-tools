@@ -64,8 +64,8 @@ handle_operation_result() {
 
 handle_operation_error_quite() {
   handle_operation_result \
-        --operation=$1 \
-        --error-message=$2 \
-        --exit-code=$3
+        --operation="$1" \
+        --error-message="$2" \
+        --exit-code="$3"
   return $?
 }
