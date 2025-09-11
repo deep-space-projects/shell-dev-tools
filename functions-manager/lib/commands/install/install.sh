@@ -12,6 +12,7 @@ error_policy="strict"
 github=false
 repo=""
 branch="main"
+entrypoint=""
 
 ##
 # Парсит аргументы командной строки и устанавливает соответствующие переменные
@@ -53,6 +54,10 @@ __parse_arguments() {
                 ;;
             --branch=*)
                 branch="${1#*=}"
+                shift
+                ;;
+            --entrypoint=*)
+                entrypoint="${1#*=}"
                 shift
                 ;;
             -r|--recursive)
@@ -195,6 +200,7 @@ __load_core_components() {
 __download_github_modules() {
     # Создаем временную директорию
     local github_temp_dir="/tmp/dev-tools-install-$(whoami)-$$/vcs/github/${repo}/${branch}"
+    local short_repo_name=$(basename "$repo")
     mkdir -p "$github_temp_dir"
 
     local zip_file="${github_temp_dir}/${branch}.zip"
@@ -215,8 +221,10 @@ __download_github_modules() {
     # Удаляем zip файл после извлечения
     rm -f "$zip_file"
 
+    log_info "GitHub Entrypoint: $github_temp_dir/$short_repo_name-$branch/$entrypoint"
+
     # Добавляем извлеченную директорию к module_dirs
-    local extracted_dir=$(find "$github_temp_dir" -maxdepth 1 -type d -name "*${repo##*/}*" | head -1)
+    local extracted_dir="$github_temp_dir/$short_repo_name-$branch/$entrypoint"
     if [[ -n "$extracted_dir" ]]; then
         if [[ -n "$module_dirs" ]]; then
             module_dirs="$module_dirs:$extracted_dir"
