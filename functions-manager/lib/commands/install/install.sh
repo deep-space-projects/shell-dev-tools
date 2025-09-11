@@ -30,7 +30,7 @@ branch="main"
 # @global branch - название ветки GitHub репозитория
 # @return 0 при успехе, выход с кодом 1 при неизвестном параметре
 ##
-parse_arguments() {
+__parse_arguments() {
     while [[ $# -gt 0 ]]; do
         case $1 in
             --module-dirs=*)
@@ -103,7 +103,7 @@ parse_arguments() {
 # @global module_dirs - пути к директориям модулей
 # @return выход с кодом 1 при ошибке валидации
 ##
-validate_arguments() {
+__validate_arguments() {
     if [[ "$interactive" == false && "$daemon" == false ]]; then
         log_error "Must specify either --interactive or --daemon"
         exit 1
@@ -138,7 +138,7 @@ validate_arguments() {
 # @global error_policy - политика обработки ошибок
 # @return выход с кодом 1 при ошибке получения прав администратора
 ##
-initialize_environment() {
+__initialize_environment() {
     # Установка verbose режима
     if [[ "$verbose" == true ]]; then
         logger_set_level DEBUG
@@ -170,7 +170,7 @@ initialize_environment() {
 # @global LIB_DIR - путь к директории библиотек
 # @return выход с кодом 1 при ошибке загрузки любого компонента
 ##
-load_core_components() {
+__load_core_components() {
     source "${LIB_DIR}/core/scanner.sh"
     source "${LIB_DIR}/core/yaml.sh"
     source "${LIB_DIR}/core/requirements-resolver.sh"
@@ -192,7 +192,7 @@ load_core_components() {
 # @global module_dirs - пути к директориям модулей (обновляется)
 # @return выход с кодом 1 при различных ошибках
 ##
-download_github_modules() {
+__download_github_modules() {
     # Создаем временную директорию
     local github_temp_dir="/tmp/dev-tools-install-$(whoami)-$$/vcs/github/${repo}/${branch}"
     mkdir -p "$github_temp_dir"
@@ -240,7 +240,7 @@ download_github_modules() {
 # @return выход с кодом 1 при ошибке сканирования, 0 при отсутствии модулей
 # @stdout список найденных модулей (по одному на строку)
 ##
-scan_modules() {
+__scan_modules() {
     local modules_list
     if ! modules_list=$(scanner_find_modules "$module_dirs" "$system" "$recursive"); then
         log_error "Failed to find modules"
@@ -274,7 +274,7 @@ scan_modules() {
 # @global install_dir - путь к директории команды install
 # @return выход с кодом 1 при неудовлетворенных требованиях
 ##
-check_prerequisites() {
+__check_prerequisites() {
     local modules_list="$1"
 
     source "${install_dir}/prerequisites/check.sh"
@@ -293,7 +293,7 @@ check_prerequisites() {
 # @return выход с кодом 1 при ошибке валидации
 # @stdout список валидированных модулей (по одному на строку)
 ##
-validate_modules() {
+__validate_modules() {
     local modules_list="$1"
 
     source "${install_dir}/validators/validation.sh"
@@ -321,12 +321,12 @@ validate_modules() {
 # @return выход с кодом 1 при ошибке генерации
 # @stdout путь к временной директории с сгенерированными файлами
 ##
-generate_modules() {
+__generate_modules() {
     local validated_modules="$1"
 
     source "${install_dir}/generators/generator.sh"
     local temp_dir
-    if ! temp_dir=$(generators_generate "$validated_modules"); then
+    if ! temp_dir=$(generate_modules "$validated_modules"); then
         log_error "Module generation failed"
         exit 1
     fi
@@ -342,7 +342,7 @@ generate_modules() {
 # @global interactive - флаг интерактивного режима
 # @return выход с кодом 0 при отказе пользователя
 ##
-request_installation_confirmation() {
+__request_installation_confirmation() {
     local validated_modules="$1"
 
     if [[ "$interactive" == false ]]; then
@@ -372,7 +372,7 @@ request_installation_confirmation() {
 # @global install_dir - путь к директории команды install
 # @return выход с кодом 1 при ошибке установки
 ##
-install_modules() {
+__install_modules() {
     local temp_dir="$1"
     local validated_modules="$2"
 
@@ -408,11 +408,11 @@ install_modules() {
 ##
 install() {
     # Парсинг и валидация аргументов
-    parse_arguments "$@"
-    validate_arguments
+    __parse_arguments "$@"
+    __validate_arguments
 
     # Инициализация среды
-    initialize_environment
+    __initialize_environment
 
     log_header "Starting Module Installation"
 
@@ -421,37 +421,37 @@ install() {
 
     # Загрузка и подготовка
     log_step 1 "Loading core components"
-    load_core_components
+    __load_core_components
 
     log_step 2 "Downloading external modules"
     if [[ "$github" == true ]]; then
         log_info "Downloading external modules from GitHub"
-        download_github_modules
+        __download_github_modules
     fi
 
     # Поиск и обработка модулей
     log_step 3 "Scanning for modules"
     local modules_list
-    modules_list=$(scan_modules)
+    modules_list=$(__scan_modules)
 
     log_step 4 "Checking prerequisites"
-    check_prerequisites "$modules_list"
+    __check_prerequisites "$modules_list"
 
     log_step 5 "Validating modules"
     local validated_modules
-    validated_modules=$(validate_modules "$modules_list")
+    validated_modules=$(__validate_modules "$modules_list")
 
     # Создание и Очистка временной директории при выходе
     log_step 6 "Generating modules"
     local temp_dir
-    temp_dir=$(generate_modules "$validated_modules")
+    temp_dir=$(__generate_modules "$validated_modules")
     trap "rm -rf '$temp_dir'" EXIT
 
     # Подтверждение и установка
-    request_installation_confirmation "$validated_modules"
+    __request_installation_confirmation "$validated_modules"
 
     log_step 7 "Installing modules"
-    install_modules "$temp_dir" "$validated_modules"
+    __install_modules "$temp_dir" "$validated_modules"
 }
 
 # Запуск установки с переданными аргументами

@@ -5,7 +5,7 @@
 # ============================================================================
 
 # Главная функция генерации модулей
-generators_generate() {
+generate_modules() {
     local validated_modules="$1"
 
     log_debug "Starting module generation"
@@ -15,7 +15,7 @@ generators_generate() {
     log_info "Creating temporary directory: $temp_dir"
 
     if ! safe_mkdir "$temp_dir" "" "755"; then
-        return $(handle_operation_error_quite "generators_generate" "Failed to create temporary directory: $temp_dir" 1)
+        return $(handle_operation_error_quite "generate_modules" "Failed to create temporary directory: $temp_dir" 1)
     fi
 
     # Определяем путь к generator модулям
@@ -23,7 +23,7 @@ generators_generate() {
     local modules_dir="${generators_dir}/modules"
 
     if [[ ! -d "$modules_dir" ]]; then
-        return $(handle_operation_error_quite "generators_generate" "Generator modules directory not found: $modules_dir" 1)
+        return $(handle_operation_error_quite "generate_modules" "Generator modules directory not found: $modules_dir" 1)
     fi
 
     # Получаем список генераторов в лексикографическом порядке
@@ -35,7 +35,7 @@ generators_generate() {
     done <<< "$(find "$modules_dir" -name "*.sh" -type f 2>/dev/null | sort)"
 
     if [[ ${#generator_modules[@]} -eq 0 ]]; then
-        return $(handle_operation_error_quite "generators_generate" "No generator modules found in: $modules_dir" 1)
+        return $(handle_operation_error_quite "generate_modules" "No generator modules found in: $modules_dir" 1)
     fi
 
     log_debug "Found ${#generator_modules[@]} generator modules"
@@ -69,12 +69,12 @@ generators_generate() {
     log_info "Module generation completed: $generated_count/$total_modules successful"
 
     if [[ $failed_count -gt 0 ]]; then
-        handle_operation_error_quite "generators_generate" "Failed module generations: ${failed_modules[*]}" 1
+        handle_operation_error_quite "generate_modules" "Failed module generations: ${failed_modules[*]}" 1
     fi
 
     # Проверяем что есть хотя бы один сгенерированный модуль
     if [[ $generated_count -eq 0 ]]; then
-        return $(handle_operation_error_quite "generators_generate" "No modules were successfully generated" 1)
+        return $(handle_operation_error_quite "generate_modules" "No modules were successfully generated" 1)
     fi
 
     log_success "Module generation completed successfully"

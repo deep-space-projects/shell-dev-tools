@@ -58,31 +58,3 @@ linker_install() {
     log_success "Module installation completed successfully"
     return 0
 }
-
-# Функция для определения подходящей bin директории
-get_system_bin_dir() {
-    local os_family=$(detect_os_family)
-
-    case "$os_family" in
-        "$OS_ALPINE")
-            # В Alpine/BusyBox системах используем /usr/bin
-            echo "/usr/bin"
-            ;;
-        "$OS_DEBIAN"|"$OS_RHEL")
-            # В полноценных системах используем /usr/local/bin
-            echo "/usr/local/bin"
-            ;;
-        "$OS_UNKNOWN")
-            # Для неизвестных систем проверяем минимальность
-            if is_minimal_system; then
-                echo "/usr/bin"
-            else
-                echo "/usr/local/bin"
-            fi
-            ;;
-        *)
-            # По умолчанию используем /usr/local/bin
-            echo "/usr/local/bin"
-            ;;
-    esac
-}

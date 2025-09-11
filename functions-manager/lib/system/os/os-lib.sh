@@ -73,7 +73,7 @@ detect_os_family() {
     local os=$(detect_os)
 
     case "$os" in
-        ubuntu|debian)
+        ubuntu|debian|linuxmint)
             echo "${OS_DEBIAN}"
             ;;
         rhel|centos|fedora|ol|rocky|almalinux)
@@ -103,8 +103,37 @@ is_minimal_system() {
     return 1
 }
 
+# Функция для определения подходящей bin директории
+get_system_bin_dir() {
+    local os_family=$(detect_os_family)
+
+    case "$os_family" in
+        "$OS_ALPINE")
+            # В Alpine/BusyBox системах используем /usr/bin
+            echo "/usr/bin"
+            ;;
+        "$OS_DEBIAN"|"$OS_RHEL")
+            # В полноценных системах используем /usr/local/bin
+            echo "/usr/local/bin"
+            ;;
+        "$OS_UNKNOWN")
+            # Для неизвестных систем проверяем минимальность
+            if is_minimal_system; then
+                echo "/usr/bin"
+            else
+                echo "/usr/local/bin"
+            fi
+            ;;
+        *)
+            # По умолчанию используем /usr/local/bin
+            echo "/usr/local/bin"
+            ;;
+    esac
+}
+
 
 # Экспорт констант
 export OS_DEBIAN OS_RHEL OS_ALPINE OS_UNKNOWN
 export -a OS_SUPPORTED
 export -f is_supported_os get_supported_os_list is_minimal_system
+export -f get_system_bin_dir

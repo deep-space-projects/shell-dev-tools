@@ -70,7 +70,10 @@ uninstall() {
 
     # Централизованная конфигурация путей
     local target_lib_dir="/usr/local/lib/devtools/packages"
-    local target_bin_dir="/usr/local/bin"
+    local target_bin_dir=$(get_system_bin_dir)
+
+    log_info "Target lib dir: $target_lib_dir"
+    log_info "Target bin dir: $target_bin_dir"
 
     # 1. Поиск установленных модулей
     log_step 1 "Discovering installed modules"
@@ -156,10 +159,16 @@ discover_installed_modules() {
     for module_dir in "$target_lib_dir"/*/; do
         if [[ -d "$module_dir" ]]; then
             local module_name=$(basename "${module_dir%/}")
+            local function_name=$(yaml_get "$module_path/module.yml" ".metadata.name")
 
             # Проверяем что это валидный модуль dev-tools
             if [[ -f "$module_dir/bin/$module_name.sh" ]]; then
                 found_modules+=("$module_name")
+            fi
+
+            # Проверяем что это валидный модуль dev-tools
+            if [[ -f "$module_dir/bin/$function_name.sh" ]]; then
+                found_modules+=("$function_name")
             fi
         fi
     done
@@ -248,7 +257,7 @@ remove_modules() {
     # Очищаем пустую директорию devtools если все модули удалены
     if [[ -d "$target_lib_dir" ]] && [[ -z "$(ls -A "$target_lib_dir" 2>/dev/null)" ]]; then
         log_info "Removing empty devtools directory: $target_lib_dir"
-        if sudo rmdir "$target_lib_dir" 2>/dev/null; then
+        if rmdir "$target_lib_dir" 2>/dev/null; then
             log_success "Empty devtools directory removed"
         else
             log_warning "Failed to remove empty devtools directory"
@@ -270,7 +279,7 @@ remove_single_module() {
     # Удаляем симлинк
     if [[ -L "$module_symlink" ]]; then
         log_debug "Removing symlink: $module_symlink"
-        if ! sudo rm -f "$module_symlink" 2>/dev/null; then
+        if ! rm -f "$module_symlink" 2>/dev/null; then
             log_error "Failed to remove symlink: $module_symlink"
             return 1
         fi
@@ -282,7 +291,7 @@ remove_single_module() {
     # Удаляем директорию модуля
     if [[ -d "$module_lib_dir" ]]; then
         log_debug "Removing module directory: $module_lib_dir"
-        if ! sudo rm -rf "$module_lib_dir" 2>/dev/null; then
+        if ! rm -rf "$module_lib_dir" 2>/dev/null; then
             log_error "Failed to remove module directory: $module_lib_dir"
             return 1
         fi

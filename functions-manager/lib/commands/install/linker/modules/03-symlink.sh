@@ -21,7 +21,6 @@ main() {
             local module_name=$(basename "$module_path")
             local function_name=$(yaml_get "$module_path/module.yml" ".metadata.name")
 
-
             log_debug "Creating symlink for module: $module_name"
 
             if create_module_symlink "$function_name" "$module_name" "$target_lib_dir" "$target_bin_dir"; then

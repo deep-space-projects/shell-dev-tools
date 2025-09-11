@@ -30,6 +30,30 @@ main() {
         return 0
     fi
 
+    __copy_files_to_destination "$files" "$module_path" "$module_temp_dir"
+
+    if ! files=$(yaml_get_module_binaries "$module_file"); then
+        log_warning "No bin files section found for module: $module_name"
+    fi
+
+    __copy_files_to_destination "$files" "$module_path" "$module_temp_dir"
+
+    # Создаем дополнительные файлы если нужно
+    if ! create_additional_files "$module_temp_dir" "$module_name"; then
+        log_error "Failed to create additional files for module: $module_name"
+        return 1
+    fi
+
+    log_success "Library processing completed for module: $module_name"
+    return 0
+}
+
+__copy_files_to_destination() {
+    local files=$1
+    local module_path="$2"
+    local module_temp_dir="$3"
+    local module_name=$(basename "$module_path")
+
     if [[ -z "$files" ]]; then
         log_warning "Empty files section for module: $module_name"
         return 0
@@ -46,42 +70,53 @@ main() {
             local source_file="$module_path/$file_name"
             local dest_file="$module_temp_dir/lib/$file_name"
 
-            # Проверяем что исходный файл существует
-            if [[ ! -f "$source_file" ]]; then
-                log_error "Source file not found: $source_file"
+            # Проверяем что исходный файл/директория существует
+            if [[ ! -e "$source_file" ]]; then
+                log_error "Source file/directory not found: $source_file"
                 failed_files+=("$file_name")
                 continue
             fi
 
-            # Проверяем что файл читаемый
+            # Проверяем что файл/директория читаемая
             if [[ ! -r "$source_file" ]]; then
-                log_error "Source file not readable: $source_file"
+                log_error "Source file/directory not readable: $source_file"
                 failed_files+=("$file_name")
                 continue
             fi
 
-            # Копируем файл
-            if cp "$source_file" "$dest_file" 2>/dev/null; then
-                log_debug "Copied file: $file_name"
+            # Копируем файл или директорию
+            if cp -r "$source_file" "$dest_file" 2>/dev/null; then
+                log_debug "Copied file/directory: $file_name"
 
                 # Устанавливаем правильные права доступа
-                if [[ "$file_name" == *.sh ]]; then
-                    chmod 644 "$dest_file" 2>/dev/null || {
-                        log_warning "Failed to set permissions for: $file_name"
+                if [[ -d "$dest_file" ]]; then
+                    log_debug "Setup rules for directory: $file_name"
+                    # Для директорий
+                    chmod 755 "$dest_file" 2>/dev/null || {
+                        log_warning "Failed to set permissions for directory: $file_name"
+                    }
+                    # Рекурсивно устанавливаем права для содержимого
+                    find "$dest_file" -type f -exec chmod 744 {} + 2>/dev/null || {
+                        log_warning "Failed to set file permissions in directory: $file_name"
+                    }
+                    find "$dest_file" -type d -exec chmod 755 {} + 2>/dev/null || {
+                        log_warning "Failed to set directory permissions in directory: $file_name"
                     }
                 else
+                    log_debug "Setup rules for file: $file_name"
+
                     chmod 644 "$dest_file" 2>/dev/null || {
                         log_warning "Failed to set permissions for: $file_name"
                     }
-                fi
 
-                # Дополнительная обработка в зависимости от типа файла
-                if ! process_file_by_type "$dest_file" "$file_name" "$module_name"; then
-                    log_warning "File processing failed for: $file_name"
+                    # Дополнительная обработка в зависимости от типа файла
+                    if ! process_file_by_type "$dest_file" "$file_name" "$module_name"; then
+                        log_warning "File processing failed for: $file_name"
+                    fi
+
                 fi
 
                 copied_files+=("$file_name")
-
             else
                 log_error "Failed to copy file: $source_file -> $dest_file"
                 failed_files+=("$file_name")
@@ -104,14 +139,6 @@ main() {
         log_debug "Successfully copied $copied_count files for module: $module_name"
     fi
 
-    # Создаем дополнительные файлы если нужно
-    if ! create_additional_files "$module_temp_dir" "$module_name"; then
-        log_error "Failed to create additional files for module: $module_name"
-        return 1
-    fi
-
-    log_success "Library processing completed for module: $module_name"
-    return 0
 }
 
 # Обработка файла в зависимости от его типа

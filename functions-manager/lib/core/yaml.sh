@@ -223,3 +223,21 @@ yaml_get_module_files() {
 
     return 1
 }
+
+# Получить файлы модуля
+yaml_get_module_binaries() {
+    local module_file="$1"
+
+    if [[ ! -f "$module_file" ]]; then
+        log_error "Module file not found: $module_file"
+        return 1
+    fi
+
+    local files
+    if files=$(yaml_get_array "$module_file" ".specification.module.binaries"); then
+        echo "$files"
+        return 0
+    fi
+
+    return 1
+}
