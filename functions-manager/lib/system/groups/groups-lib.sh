@@ -31,7 +31,7 @@ get_group_uid() {
         fi
     fi
 
-    log_error "Cannot determine GID for group: $groupname"
+    log_warning "Cannot determine GID for group: $groupname"
     return 1
 }
 
