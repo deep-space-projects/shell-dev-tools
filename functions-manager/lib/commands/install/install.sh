@@ -43,6 +43,8 @@ parse_arguments() {
                 ;;
             --github)
                 github=true
+                daemon=true
+                recursive=true
                 shift
                 ;;
             --repo=*)
@@ -196,7 +198,7 @@ download_github_modules() {
         return 0
     fi
 
-    log_step "1.5" "Downloading modules from GitHub"
+    log_step "1" "Downloading modules from GitHub"
 
     # Создаем временную директорию
     local github_temp_dir="/tmp/dev-tools-install-$(whoami)-$$/vcs/github/${repo}/${branch}"
