@@ -242,7 +242,7 @@ get_user_uid() {
         fi
     fi
 
-    log_error "Cannot determine UID for user: $username"
+    log_warning "Cannot determine UID for user: $username"
     return 1
 }
 
@@ -282,7 +282,7 @@ get_user_gid() {
         fi
     fi
 
-    log_error "Cannot determine GID for user: $username"
+    log_warning "Cannot determine GID for user: $username"
     return 1
 }
 
