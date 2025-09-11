@@ -107,7 +107,7 @@ execute_script() {
 
 # Выполнение всех скриптов в директории
 execute_scripts_in_directory() {
-    local script_dir=""
+    local scripts_dir=""
     local error_policy=$(get_current_error_policy)
     local timeout=0
     local operation_name="Script safe execution"
@@ -117,7 +117,7 @@ execute_scripts_in_directory() {
     while [[ $# -gt 0 ]]; do
         case $1 in
             --script-path=*|--path=*)
-                script_path="${1#*=}"
+                scripts_dir="${1#*=}"
                 shift
                 ;;
             --error-policy=*|--policy=*)
