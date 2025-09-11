@@ -62,7 +62,7 @@ execute_script() {
     fi
 
     if [[ ! -x "$script_path" ]]; then
-        log debug "Making script executable: $script_path"
+        log_debug "Making script executable: $script_path"
         chmod +x "$script_path" 2>/dev/null || {
             log_warning "Could not make script executable: $script_path"
         }
@@ -99,7 +99,7 @@ execute_script() {
         local error_msg="Script '$description' failed with exit code $exit_code"
         return $(handle_operation_error_quite $operation_name $error_msg $exit_code)
     else
-        log success "Script '$description' completed successfully"
+        log_success "Script '$description' completed successfully"
     fi
 
     return $exit_code

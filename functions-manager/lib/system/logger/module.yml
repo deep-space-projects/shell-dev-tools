@@ -21,8 +21,8 @@ specification:
 
       - name: "success"
         function: "log_success"
-        description: "Log success message"
-        usage: "tlog success <message>"
+        description: "log_success message"
+        usage: "tlog_success <message>"
 
       - name: "warning"
         function: "log_warning"

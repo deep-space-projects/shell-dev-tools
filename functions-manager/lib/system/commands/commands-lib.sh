@@ -90,12 +90,12 @@ execute_command_with_timeout() {
 
     # Валидация параметров
     if [[ -z "$timeout" ]] || [[ ${#executable_args[@]} -eq 0 ]] || [[ -z "$description" ]]; then
-        log error "Usage: execute_command_with_timeout --timeout=SECONDS --description='Description' command [args...]"
+        log_error "Usage: execute_command_with_timeout --timeout=SECONDS --description='Description' command [args...]"
         return 1
     fi
 
-    log info "Executing: $description (timeout: ${timeout}s)"
-    log debug "Command: ${executable_args[*]}"
+    log_info "Executing: $description (timeout: ${timeout}s)"
+    log_debug "Command: ${executable_args[*]}"
 
     # Запускаем в background
     "${executable_args[@]}" &
@@ -116,7 +116,7 @@ execute_command_with_timeout() {
 
         # Показываем прогресс каждые 30 секунд
         if (( elapsed % 30 == 0 )); then
-            log debug "Still executing '$description'... (${elapsed}/${timeout}s)"
+            log_debug "Still executing '$description'... (${elapsed}/${timeout}s)"
         fi
     done
 
@@ -124,7 +124,7 @@ execute_command_with_timeout() {
 
     if [[ "$status" == "running" ]]; then
         # Таймаут - принудительное завершение
-        log warning "Timeout reached for '$description', terminating..."
+        log_warning "Timeout reached for '$description', terminating..."
 
         # Сначала мягкое завершение
         if kill -TERM "$bg_pid" 2>/dev/null; then
@@ -138,21 +138,21 @@ execute_command_with_timeout() {
 
         # Если не помогло - принудительное завершение
         if kill -0 "$bg_pid" 2>/dev/null; then
-            log warning "Executable didn't respond to SIGTERM, sending SIGKILL"
+            log_warning "Executable didn't respond to SIGTERM, sending SIGKILL"
             kill -KILL "$bg_pid" 2>/dev/null
         fi
 
         exit_code=124  # Стандартный код для timeout
-        log error "Execution '$description' terminated due to timeout (${timeout}s)"
+        log_error "Execution '$description' terminated due to timeout (${timeout}s)"
     else
         # Завершилось нормально
         wait "$bg_pid"
         exit_code=$?
 
         if [[ $exit_code -eq 0 ]]; then
-            log success "Execution '$description' completed successfully (${elapsed}s)"
+            log_success "Execution '$description' completed successfully (${elapsed}s)"
         else
-            log error "Execution '$description' failed with exit code $exit_code (${elapsed}s)"
+            log_error "Execution '$description' failed with exit code $exit_code (${elapsed}s)"
         fi
     fi
 
