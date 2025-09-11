@@ -171,7 +171,6 @@ initialize_environment() {
 # @return выход с кодом 1 при ошибке загрузки любого компонента
 ##
 load_core_components() {
-    log_step 1 "Loading core components"
     source "${LIB_DIR}/core/scanner.sh"
     source "${LIB_DIR}/core/yaml.sh"
     source "${LIB_DIR}/core/requirements-resolver.sh"
@@ -194,12 +193,6 @@ load_core_components() {
 # @return выход с кодом 1 при различных ошибках
 ##
 download_github_modules() {
-    if [[ "$github" == false ]]; then
-        return 0
-    fi
-
-    log_step "1" "Downloading modules from GitHub"
-
     # Создаем временную директорию
     local github_temp_dir="/tmp/dev-tools-install-$(whoami)-$$/vcs/github/${repo}/${branch}"
     mkdir -p "$github_temp_dir"
@@ -248,7 +241,6 @@ download_github_modules() {
 # @stdout список найденных модулей (по одному на строку)
 ##
 scan_modules() {
-    log_step 2 "Scanning for modules"
     local modules_list
     if ! modules_list=$(scanner_find_modules "$module_dirs" "$system" "$recursive"); then
         log_error "Failed to find modules"
@@ -285,7 +277,6 @@ scan_modules() {
 check_prerequisites() {
     local modules_list="$1"
 
-    log_step 3 "Checking prerequisites"
     source "${install_dir}/prerequisites/check.sh"
     if ! prerequisites_check "$modules_list"; then
         log_error "Prerequisites check failed"
@@ -305,7 +296,6 @@ check_prerequisites() {
 validate_modules() {
     local modules_list="$1"
 
-    log_step 4 "Validating modules"
     source "${install_dir}/validators/validation.sh"
     local validated_modules
     if ! validated_modules=$(validators_validate "$modules_list"); then
@@ -334,7 +324,6 @@ validate_modules() {
 generate_modules() {
     local validated_modules="$1"
 
-    log_step 5 "Generating modules"
     source "${install_dir}/generators/generator.sh"
     local temp_dir
     if ! temp_dir=$(generators_generate "$validated_modules"); then
@@ -387,7 +376,6 @@ install_modules() {
     local temp_dir="$1"
     local validated_modules="$2"
 
-    log_step 6 "Installing modules"
     source "${install_dir}/linker/linker.sh"
     if ! linker_install "$temp_dir" "$validated_modules"; then
         log_error "Module installation failed"
@@ -432,25 +420,37 @@ install() {
     local install_dir="${LIB_DIR}/commands/install"
 
     # Загрузка и подготовка
+    log_step 1 "Loading core components"
     load_core_components
-    download_github_modules
+
+    log_step 2 "Downloading external modules"
+    if [[ "$github" == true ]]; then
+        log_info "Downloading external modules from GitHub"
+        download_github_modules
+    fi
 
     # Поиск и обработка модулей
+    log_step 3 "Scanning for modules"
     local modules_list
     modules_list=$(scan_modules)
 
+    log_step 4 "Checking prerequisites"
     check_prerequisites "$modules_list"
 
+    log_step 5 "Validating modules"
     local validated_modules
     validated_modules=$(validate_modules "$modules_list")
 
     # Создание и Очистка временной директории при выходе
+    log_step 6 "Generating modules"
     local temp_dir
     temp_dir=$(generate_modules "$validated_modules")
     trap "rm -rf '$temp_dir'" EXIT
 
     # Подтверждение и установка
     request_installation_confirmation "$validated_modules"
+
+    log_step 7 "Installing modules"
     install_modules "$temp_dir" "$validated_modules"
 }
 
