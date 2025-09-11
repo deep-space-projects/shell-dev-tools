@@ -45,6 +45,13 @@ execute_script() {
         esac
     done
 
+    log_debug "SCRIPT EXECUTION"
+    log_debug "Directory: $scripts_dir"
+    log_debug "Error policy: $error_policy"
+    log_debug "Timeout: $timeout"
+    log_debug "Description: $description"
+    log_debug "Operation name: $operation_name"
+
     # Устанавливаем описание по умолчанию если не задано
     if [[ -z "$description" ]]; then
         description=$(basename "$script_path")
@@ -142,6 +149,13 @@ execute_scripts_in_directory() {
                 ;;
         esac
     done
+
+    log_debug "SCRIPT(S) EXECUTION"
+    log_debug "Directory: $scripts_dir"
+    log_debug "Error policy: $error_policy"
+    log_debug "Timeout: $timeout"
+    log_debug "Pattern: $pattern"
+    log_debug "Operation name: $operation_name"
 
     if [[ -z "$scripts_dir" ]]; then
         log_error "Scripts directory is required"
