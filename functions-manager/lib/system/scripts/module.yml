@@ -8,6 +8,9 @@ metadata:
 
 specification:
   module:
+    dependencies:
+      modules: [ logger, modes ]
+
     commands:
       # ---------------
       - name: "exec"
