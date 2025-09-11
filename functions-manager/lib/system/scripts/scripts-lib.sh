@@ -153,7 +153,7 @@ execute_scripts_in_directory() {
     log_debug "SCRIPT(S) EXECUTION"
     log_debug "Directory: $scripts_dir"
     log_debug "Error policy: $error_policy"
-    log_debug "Timeout: $timeout"
+    log_debug "Timeout: $timeout (global)"
     log_debug "Pattern: $pattern"
     log_debug "Operation name: $operation_name"
 
@@ -166,6 +166,25 @@ execute_scripts_in_directory() {
         log_debug "Scripts directory does not exist: $scripts_dir"
         return 0
     fi
+
+    # Применяем глобальный таймаут если задан
+    if [[ -n "$timeout" ]] && [[ "$timeout" -gt 0 ]]; then
+        log_info "Executing scripts with global timeout: ${timeout}s"
+        execute_command --timeout="$timeout" --description="Execute scripts in $scripts_dir" __execute_all_scripts "$scripts_dir" "$error_policy" "$pattern"
+        return $?
+    else
+        # Выполняем без глобального таймаута
+        __execute_all_scripts "$scripts_dir" "$error_policy" "$pattern"
+        return $?
+    fi
+
+}
+
+# Внутренняя функция для выполнения всех скриптов без глобального таймаута
+__execute_all_scripts() {
+    local scripts_dir="$1"
+    local error_policy="$2"
+    local pattern="$3"
 
     log_info "Executing scripts from: $scripts_dir"
 
@@ -191,10 +210,11 @@ execute_scripts_in_directory() {
 
         log_step "$total_executed" "Executing $script_name"
 
+        # Выполняем скрипт БЕЗ индивидуального таймаута (timeout=0)
         if ! execute_script \
                 --script-path="$script" \
                 --error-policy="$error_policy" \
-                --timeout="$timeout" \
+                --timeout="0" \
                 --operation-name="$script_name"; then
             failed_scripts+=("$script_name")
 
@@ -220,7 +240,6 @@ execute_scripts_in_directory() {
 
     return 0
 }
-
 
 # Экспорт функций
 export -f execute_script execute_scripts_in_directory
