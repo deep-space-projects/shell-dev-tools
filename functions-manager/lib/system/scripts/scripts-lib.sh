@@ -193,7 +193,7 @@ execute_scripts_in_directory() {
 
         if ! execute_script \
                 --script-path="$script" \
-                --error-policy"$error_policy" \
+                --error-policy="$error_policy" \
                 --timeout="$timeout" \
                 --operation-name="$script_name"; then
             failed_scripts+=("$script_name")
