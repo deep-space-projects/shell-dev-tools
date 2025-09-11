@@ -209,4 +209,4 @@ execute_scripts_in_directory() {
 
 
 # Экспорт функций
-export -f execute_script_safely execute_scripts_in_directory
+export -f execute_script execute_scripts_in_directory
