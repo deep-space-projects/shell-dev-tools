@@ -208,3 +208,5 @@ __resolve_error_policy_name_to_code() {
 
 export EXEC_MODE_STANDARD EXEC_MODE_SKIP_ALL EXEC_MODE_INIT_ONLY EXEC_MODE_DEBUG EXEC_MODE_DRY_RUN
 export ERROR_POLICY_STRICT ERROR_POLICY_SOFT ERROR_POLICY_CUSTOM
+export -f get_current_exec_mode get_exec_mode_name_by_code set_exec_mode
+export -f get_current_error_policy get_error_policy_name_by_code set_error_policy
