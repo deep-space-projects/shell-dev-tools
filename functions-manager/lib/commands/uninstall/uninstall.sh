@@ -133,10 +133,17 @@ uninstall() {
         fi
     fi
 
-    # 4. Удаление модулей
+    # Удаление модулей
     log_step 3 "Removing modules"
     if ! remove_modules "$modules_to_remove" "$target_lib_dir" "$target_bin_dir"; then
         log_error "Module removal failed"
+        exit 1
+    fi
+
+    # 4. Удаление повисших ссылок
+    log_step 4 "Removing hanging symlink"
+    if ! remove_hanging_symlinks "$target_bin_dir"; then
+        log_error "Hanging symlinks removal failed"
         exit 1
     fi
 
@@ -159,16 +166,10 @@ discover_installed_modules() {
     for module_dir in "$target_lib_dir"/*/; do
         if [[ -d "$module_dir" ]]; then
             local module_name=$(basename "${module_dir%/}")
-            local function_name=$(yaml_get "$module_path/module.yml" ".metadata.name")
 
             # Проверяем что это валидный модуль dev-tools
             if [[ -f "$module_dir/bin/$module_name.sh" ]]; then
                 found_modules+=("$module_name")
-            fi
-
-            # Проверяем что это валидный модуль dev-tools
-            if [[ -f "$module_dir/bin/$function_name.sh" ]]; then
-                found_modules+=("$function_name")
             fi
         fi
     done
@@ -302,5 +303,12 @@ remove_single_module() {
 
     return 0
 }
+
+# удаление повисших симлинков после чистки пакетов
+remove_hanging_symlinks() {
+  local target_bin_dir=$1
+  find $target_bin_dir -type l ! -exec test -e {} \; -print -delete
+}
+
 
 uninstall "$@"
