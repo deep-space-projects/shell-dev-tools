@@ -9,6 +9,7 @@ interactive=false
 daemon=false
 privileged=false
 error_policy="strict"
+install_mode="module"
 github=false
 repo=""
 branch="main"
@@ -58,6 +59,10 @@ __parse_arguments() {
                 ;;
             --entrypoint=*)
                 entrypoint="${1#*=}"
+                shift
+                ;;
+            --mode=*)
+                install_mode="${1#*=}"
                 shift
                 ;;
             -r|--recursive)
@@ -285,7 +290,7 @@ __scan_modules() {
 __check_prerequisites() {
     local modules_list="$1"
 
-    source "${install_dir}/prerequisites/check.sh"
+    source "${install_dir}/module/prerequisites/check.sh"
     if ! prerequisites_check "$modules_list"; then
         log_error "Prerequisites check failed"
         exit 1
@@ -304,7 +309,7 @@ __check_prerequisites() {
 __validate_modules() {
     local modules_list="$1"
 
-    source "${install_dir}/validators/validation.sh"
+    source "${install_dir}/module/validators/validation.sh"
     local validated_modules
     if ! validated_modules=$(validators_validate "$modules_list"); then
         log_error "Module validation failed"
@@ -332,7 +337,7 @@ __validate_modules() {
 __generate_modules() {
     local validated_modules="$1"
 
-    source "${install_dir}/generators/generator.sh"
+    source "${install_dir}/module/generators/generator.sh"
     local temp_dir
     if ! temp_dir=$(generate_modules "$validated_modules"); then
         log_error "Module generation failed"
@@ -384,7 +389,7 @@ __install_modules() {
     local temp_dir="$1"
     local validated_modules="$2"
 
-    source "${install_dir}/linker/linker.sh"
+    source "${install_dir}/module/linker/linker.sh"
     if ! linker_install "$temp_dir" "$validated_modules"; then
         log_error "Module installation failed"
         exit 1
@@ -418,10 +423,24 @@ install() {
     # Парсинг и валидация аргументов
     __parse_arguments "$@"
     __validate_arguments
-
-    # Инициализация среды
     __initialize_environment
 
+    case $install_mode in
+        module)
+            __install_module__ "$@"
+            return $?
+            ;;
+        binaries)
+            __install_binaries__ "$@"
+            return $?
+            ;;
+        *)
+            tlog error "Unknow install mode: $install_mode"
+            return 1
+    esac
+}
+
+__install_module__() {
     log_header "Starting Module Installation"
 
     # Определяем путь к install команде
@@ -460,6 +479,12 @@ install() {
 
     log_step 7 "Installing modules"
     __install_modules "$temp_dir" "$validated_modules"
+}
+
+__install_binaries__() {
+    log_header "Starting Binaries Installation"
+    log_error "Unsupported install type"
+    exit 10
 }
 
 # Запуск установки с переданными аргументами

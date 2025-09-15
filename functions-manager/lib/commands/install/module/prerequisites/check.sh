@@ -11,7 +11,7 @@ prerequisites_check() {
     log_debug "Starting prerequisites check"
 
     # Определяем путь к prerequisites модулям
-    local prerequisites_dir="${LIB_DIR}/commands/install/prerequisites"
+    local prerequisites_dir="${LIB_DIR}/commands/install/module/prerequisites"
     local modules_dir="${prerequisites_dir}/modules"
 
     if [[ ! -d "$modules_dir" ]]; then

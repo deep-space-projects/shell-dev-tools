@@ -57,7 +57,7 @@ main() {
         fi
 
         # Проверяем корректность имени команды (теперь разрешаем пробелы)
-        if [[ ! "$command_name" =~ ^[a-zA-Z0-9][a-zA-Z0-9\ _-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$ ]]; then
+        if [[ ! "$command_name" =~ ^([a-zA-Z0-9]|--?)[a-zA-Z0-9\ _=-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$ ]]; then
             log_error "Invalid command name format: '$command_name' (only letters, numbers, spaces, underscores and hyphens allowed)"
             return 1
         fi

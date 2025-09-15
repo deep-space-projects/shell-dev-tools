@@ -16,7 +16,7 @@ linker_install() {
     local target_bin_dir=$(get_system_bin_dir)
 
     # Определяем путь к linker модулям
-    local linkers_dir="${LIB_DIR}/commands/install/linker"
+    local linkers_dir="${LIB_DIR}/commands/install/module/linker"
     local modules_dir="${linkers_dir}/modules"
 
     if [[ ! -d "$modules_dir" ]]; then

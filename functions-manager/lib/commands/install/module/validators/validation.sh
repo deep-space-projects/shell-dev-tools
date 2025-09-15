@@ -11,7 +11,7 @@ validators_validate() {
     log_debug "Starting module validation"
 
     # Определяем путь к validators модулям
-    local validators_dir="${LIB_DIR}/commands/install/validators"
+    local validators_dir="${LIB_DIR}/commands/install/module/validators"
     local modules_dir="${validators_dir}/modules"
 
     if [[ ! -d "$modules_dir" ]]; then

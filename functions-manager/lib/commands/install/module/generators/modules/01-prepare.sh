@@ -43,6 +43,8 @@ main() {
         return 1
     fi
 
+    local route_unknown=$(yaml_get_module_unknown_route "$module_file")
+
     # Записываем метаданные во временный файл
     cat > "$metadata_file" << EOF
 MODULE_NAME=$(printf '%q' "$name")
@@ -51,6 +53,7 @@ MODULE_DESCRIPTION=$(printf '%q' "${description:-}")
 MODULE_SOURCE_PATH=$(printf '%q' "$module_path")
 MODULE_TEMP_PATH=$(printf '%q' "$module_temp_dir")
 GENERATION_TIMESTAMP=$(printf '%q' "$(date '+%Y-%m-%d %H:%M:%S')")
+ROUTE_UNKNOWN=$(printf '%q' "$route_unknown")
 EOF
 
 

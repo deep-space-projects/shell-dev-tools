@@ -45,7 +45,7 @@ validate_system_permissions() {
     # Проверяем /usr/local/lib
     if [[ ! -d "$target_lib_dir" ]]; then
         log_info "Creating target library directory: $target_lib_dir"
-        if ! sudo mkdir -p "$target_lib_dir" 2>/dev/null; then
+        if ! mkdir -p "$target_lib_dir" 2>/dev/null; then
             log_error "Cannot create directory: $target_lib_dir"
             return 1
         fi
@@ -53,7 +53,7 @@ validate_system_permissions() {
 
     if [[ ! -w "$target_lib_dir" ]]; then
         # Проверяем возможность записи с sudo
-        if ! sudo test -w "$target_lib_dir" 2>/dev/null; then
+        if ! test -w "$target_lib_dir" 2>/dev/null; then
             log_error "No write permission to: $target_lib_dir"
             return 1
         fi
@@ -62,7 +62,7 @@ validate_system_permissions() {
     # Проверяем /usr/local/bin
     if [[ ! -d "$target_bin_dir" ]]; then
         log_info "Creating target binary directory: $target_bin_dir"
-        if ! sudo mkdir -p "$target_bin_dir" 2>/dev/null; then
+        if ! mkdir -p "$target_bin_dir" 2>/dev/null; then
             log_error "Cannot create directory: $target_bin_dir"
             return 1
         fi
@@ -70,7 +70,7 @@ validate_system_permissions() {
 
     if [[ ! -w "$target_bin_dir" ]]; then
         # Проверяем возможность записи с sudo
-        if ! sudo test -w "$target_bin_dir" 2>/dev/null; then
+        if ! test -w "$target_bin_dir" 2>/dev/null; then
             log_error "No write permission to: $target_bin_dir"
             return 1
         fi

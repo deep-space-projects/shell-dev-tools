@@ -95,10 +95,12 @@ __copy_files_to_destination() {
                     chmod 755 "$dest_file" 2>/dev/null || {
                         log_warning "Failed to set permissions for directory: $file_name"
                     }
+
                     # Рекурсивно устанавливаем права для содержимого
-                    find "$dest_file" -type f -exec chmod 744 {} + 2>/dev/null || {
+                    find "$dest_file" -type f -exec chmod 755 {} + 2>/dev/null || {
                         log_warning "Failed to set file permissions in directory: $file_name"
                     }
+
                     find "$dest_file" -type d -exec chmod 755 {} + 2>/dev/null || {
                         log_warning "Failed to set directory permissions in directory: $file_name"
                     }

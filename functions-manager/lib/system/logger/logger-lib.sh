@@ -11,12 +11,12 @@ LOG_TIMESTAMPS="${LOG_TIMESTAMPS:-true}"
 
 # Определение уровней логирования
 declare -A LOG_LEVELS=(
-    [TRACE]=-1
-    [DEBUG]=0
-    [INFO]=1
-    [SUCCESS]=2
-    [WARNING]=3
-    [ERROR]=4
+    [TRACE]=0
+    [DEBUG]=1
+    [INFO]=2
+    [SUCCESS]=4
+    [WARNING]=4
+    [ERROR]=5
 )
 
 # Иконки для разных уровней (совместимые с любой ОС)
@@ -125,6 +125,17 @@ logger_set_level() {
 
     export LOG_LEVEL="$new_level"
     log_debug "Log level set to: $LOG_LEVEL"
+    return 0
+}
+
+logger_decode_level() {
+    local current_level_num=${LOG_LEVELS[$1]:-1}
+
+    if [[ $current_level_num -eq -1 ]]; then
+      return 1
+    fi
+
+    echo $current_level_num
     return 0
 }
 

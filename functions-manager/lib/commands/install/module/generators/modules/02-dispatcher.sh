@@ -53,7 +53,7 @@ main() {
     generate_helper_functions "$dispatcher_file" "$module_name"
 
     # Генерируем main функцию
-    generate_main_function "$dispatcher_file" "$module_name"
+    generate_main_function "$dispatcher_file" "$module_name" "${ROUTE_UNKNOWN:-false}"
 
     # Добавляем точку входа
     cat >> "$dispatcher_file" << EOF
@@ -293,6 +293,7 @@ find_command() {
         fi
     done
 
+
     return 1
 }
 
@@ -303,6 +304,7 @@ EOF
 generate_main_function() {
     local dispatcher_file="$1"
     local module_name="$2"
+    local route_unknown="$3"
 
     cat >> "$dispatcher_file" << EOF
 # Главная функция диспетчеризации
@@ -343,6 +345,12 @@ main() {
 
     # Если команда не найдена
     if [[ -z "\$command_found" ]]; then
+        # выполняем routing в fallback
+        if [[ $route_unknown == "true" ]]; then
+            __unknown__ "\${args[@]}"
+            return $?
+        fi
+
         echo "Error: Unknown command '\${args[*]}'" >&2
         echo "Use '$module_name help' to see available commands" >&2
         return 1

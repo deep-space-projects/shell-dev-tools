@@ -19,7 +19,7 @@ generate_modules() {
     fi
 
     # Определяем путь к generator модулям
-    local generators_dir="${LIB_DIR}/commands/install/generators"
+    local generators_dir="${LIB_DIR}/commands/install/module/generators"
     local modules_dir="${generators_dir}/modules"
 
     if [[ ! -d "$modules_dir" ]]; then

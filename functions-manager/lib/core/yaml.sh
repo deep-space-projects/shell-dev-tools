@@ -152,6 +152,27 @@ yaml_get_module_metadata() {
     return 0
 }
 
+# Получить метаданные модуля
+yaml_get_module_unknown_route() {
+    local module_file="$1"
+
+    if [[ ! -f "$module_file" ]]; then
+        log_error "Module file not found: $module_file"
+        return 1
+    fi
+
+    local route_unknown
+
+    route_unknown=$(yaml_get "$module_file" ".specification.module.routes.unknown")
+
+    if [[ -z "$route_unknown" ]]; then
+        route_unknown="false"
+    fi
+
+    echo $route_unknown
+    return 0
+}
+
 # Получить команды модуля
 yaml_get_module_commands() {
     local module_file="$1"
