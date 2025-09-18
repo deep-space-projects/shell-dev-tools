@@ -599,7 +599,7 @@ replace_user() {
 
             # Обновляем права в основных директориях
             # Используем переменную CHOWN_DIRS, если пуста - берем значения по умолчанию
-            local chown_dirs="${USERS_CMD_REPLACE_CHOWN_DIRS:-/home,/opt,/var,/tmp,/etc,/usr,/data}"
+            local chown_dirs="${USERS_CMD_REPLACE_CHOWN_DIRS:-/home,/opt,/var,/tmp,/etc,/usr,/data,/run}"
             # Заменяем запятые на пробелы
             chown_dirs="${chown_dirs//,/ }"
 
