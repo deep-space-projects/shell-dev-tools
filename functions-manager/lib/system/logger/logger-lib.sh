@@ -43,8 +43,17 @@ declare -A LOG_COLORS_CODES=(
 # Функция проверки нужно ли логировать сообщение
 should_log() {
     local level=$1
-    local current_level_num=${LOG_LEVELS[$LOG_LEVEL]:-1}
+    local current_level_num
     local message_level_num=${LOG_LEVELS[$level]:-1}
+
+    # Проверяем, является ли LOG_LEVEL числом
+    if [[ $LOG_LEVEL =~ ^[0-9]+$ ]]; then
+        # LOG_LEVEL - это число, используем его напрямую
+        current_level_num=$LOG_LEVEL
+    else
+        # LOG_LEVEL - это строка (название уровня), ищем в массиве
+        current_level_num=${LOG_LEVELS[$LOG_LEVEL]:-1}
+    fi
 
     [[ $message_level_num -ge $current_level_num ]]
 }

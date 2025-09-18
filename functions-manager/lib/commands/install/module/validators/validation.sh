@@ -68,7 +68,7 @@ validate_single_module() {
     local module_name=$(basename "$module_path")
 
     # Получаем список валидаторов в лексикографическом порядке
-    local validators_dir="${LIB_DIR}/commands/install/validators"
+    local validators_dir="${LIB_DIR}/commands/install/module/validators"
     local modules_dir="${validators_dir}/modules"
 
     local validator_modules=()
