@@ -64,6 +64,9 @@ specification:
         description: "Create new user or implement logic depends on existing mode"
         usage: "users create --on-exist=(fail|update|return) --update-mode=(just|full) <username> <uid> <groupname>"
 
-
+      - name: "replace"
+        function: "replace_user"
+        description: "Replace old user with new one"
+        usage: "users replace --update-mode=(just|full) <username-old> <username> <uid> <groupname>"
     files:
       - "users-lib.sh"

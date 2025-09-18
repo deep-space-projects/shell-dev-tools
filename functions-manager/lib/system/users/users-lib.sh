@@ -429,54 +429,8 @@ create_user() {
                 return 1
                 ;;
             update)
-                if [[ ! $update_mode =~ ^(just|full)$ ]]; then
-                    log_error "Unknown or undefined update mode: $update_mode"
-                    return 1
-                fi
-                
-                log_info "User $username already exists, attempting to update"
-                
-                if ! command -v usermod >/dev/null 2>&1; then
-                    log_error "\$(usermod) not available!"
-                    return 1
-                fi
-            
-                # Получаем старый UID
-                local old_uid
-                old_uid=$(get_user_uid "$username" 2>/dev/null || echo "")
-
-                if usermod -u "$uid" -g "$groupname" "$username"; then
-                    log_success "User updated successfully"
-            
-                    # Исправляем права на файлы если UID изменился
-                    if [[ -n "$old_uid" && "$old_uid" != "$uid" ]] && [[ $update_mode == "full" ]]; then
-                        log_info "User UID changed from $old_uid to $uid - fixing file ownership"
-
-                        local gid=$(get_group_uid $groupname)
-
-                        if [[ -z "$gid" ]] || [[ ! "$gid" =~ ^[1-9][0-9]{0,4}$ ]] ; then
-                            log_error "Group UID is undefined"
-                            return 1
-                        fi
-
-                        log_info "Updating file ownership from UID $old_uid to $uid:$gid"
-
-                        # Обновляем права в основных директориях
-                        for dir in /home /opt /var /tmp /etc /usr /data; do
-                            if [[ -d "$dir" ]]; then
-                                log_debug "Checking directory: $dir"
-                                find "$dir" -user "$old_uid" -print -exec chown "$uid:$gid" {} + 2>/dev/null || true
-                            fi
-                        done
-
-                        log_success "File ownership from $old_uid to $uid:$gid update completed"
-                    else
-                        log_warning "Update user $uid proceed, but not in full-mode. That means some system files could leave under $old_uid ownership!"
-                    fi
-                else
-                    log_error "Failed to update user $uid with \$(usermod)!"
-                    return 1
-                fi            
+                replace_user --update-mode=$update_mode $username $username $uid $groupname
+                return $?
                 ;;
             return)
                 log_info "User already exists: $username"
@@ -518,6 +472,145 @@ create_user() {
     fi
 
     log_success "Successfully created user: $username with UID: $uid in group: $groupname"
+}
+
+replace_user() {
+    local update_mode="full"
+    local old_username=""
+    local new_username=""
+    local new_uid=""
+    local new_groupname=""
+    local new_gid=""
+
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            --update-mode=*)
+                update_mode="${1#*=}"
+                shift
+                ;;
+            -*)
+                echo "Unknown option: $1" >&2
+                return 1
+                ;;
+            *)
+                if [[ -z "$old_username" ]]; then
+                    old_username="$1"
+                elif [[ -z "$new_username" ]]; then
+                    new_username="$1"
+                elif [[ -z "$new_uid" ]]; then
+                    new_uid="$1"
+                elif [[ -z "$new_groupname" ]]; then
+                    new_groupname="$1"
+                else
+                    echo "Too many arguments" >&2
+                    return 1
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    if [[ -z "$old_username" ]] || [[ ! "$old_username" =~ ^[a-zA-Z][a-zA-Z0-9_-]+$ ]]; then
+        log_error "Old user name $old_username is required"
+        return 1
+    fi
+
+    if ! is_user_exists $old_username; then
+        log_error "Old user name $old_username does not exists"
+        return 1
+    fi
+
+    if [[ -z "$new_username" ]] || [[ ! "$new_username" =~ ^[a-zA-Z][a-zA-Z0-9_-]+$ ]]; then
+        log_error "New user name $new_username is required"
+        return 1
+    fi
+
+    if is_user_exists $new_username; then
+        log_error "New user name $new_username already exists"
+        return 1
+    fi
+
+    if [[ -z "$new_groupname" ]] || [[ ! "$new_groupname" =~ ^[a-zA-Z][a-zA-Z0-9_-]+$ ]]; then
+        log_error "New group name $new_groupname is required"
+        return 1
+    fi
+
+    if ! is_group_exists $new_groupname; then
+        log_error "New group name $new_username does not exists"
+        return 1
+    fi
+
+    if [[ -z "$new_uid" ]] || [[ ! "$new_uid" =~ ^[1-9][0-9]{0,4}$ ]] ; then
+        log_error "User UID is required"
+        return 1
+    fi
+
+    new_gid=$(get_group_uid $new_groupname)
+    if [[ -z "$new_gid" ]] || [[ ! "$new_gid" =~ ^[1-9][0-9]{0,4}$ ]] ; then
+        log_error "Group UID is undefined"
+        return 1
+    fi
+
+    if [[ ! $update_mode =~ ^(just|full)$ ]]; then
+        log_error "Unknown or undefined update mode: $update_mode"
+        return 1
+    fi
+
+    if ! command -v usermod >/dev/null 2>&1; then
+        log_error "\$(usermod) not available!"
+        return 1
+    fi
+
+    # изменяем старое имя пользователя на новое (теперь у )
+    if [[ "$new_username" != "$old_username" ]]; then
+
+        if is_user_exists $new_username; then
+            # нельзя заменять пользователя который уже существует
+            log_error "New user name $new_username already exists"
+            return 1
+        fi
+
+        if ! usermod -l "$new_username" "$old_username"; then
+            log_error "Could not change username from $old_username to $new_username"
+            return 1
+        fi
+
+    fi
+
+    # обозначаем что теперь у нас ОДИН username и два разных uid, которые требуется заменить
+    local username=$new_username
+
+    # Получаем старый UID
+    local old_uid
+    old_uid=$(get_user_uid "$old_username" 2>/dev/null || echo "")
+
+    if usermod -u "$new_uid" -g "$new_groupname" "$username"; then
+        log_success "User $username updated successfully from old to new uid:$new_uid and group:$new_groupname"
+
+        # Исправляем права на файлы если UID изменился
+        if [[ -n "$old_uid" && "$old_uid" != "$new_uid" ]] && [[ $update_mode == "full" ]]; then
+            log_info "User UID changed from $old_uid to $new_uid - fixing file ownership"
+            log_info "Updating file ownership from UID $old_uid to $new_uid:$new_gid"
+
+            # Обновляем права в основных директориях
+            for dir in /home /opt /var /tmp /etc /usr /data; do
+                if [[ -d "$dir" ]]; then
+                    log_debug "Checking directory: $dir"
+                    find "$dir" -user "$old_uid" -print -exec chown "$new_uid:$new_gid" {} + 2>/dev/null || true
+                fi
+            done
+
+            log_success "File ownership from $old_uid to $new_uid:$new_gid update completed"
+        else
+            log_warning "Update user $new_uid proceed, but not in full-mode. That means some system files could leave under $old_uid ownership!"
+        fi
+    else
+        log_error "Failed to update user $new_uid with \$(usermod)!"
+        return 1
+    fi
+
+    log_success "Successfully created user: $username with UID: $new_uid in group: $new_groupname"
 }
 
 # Создание пользователя с помощью useradd
