@@ -515,7 +515,7 @@ replace_user() {
         esac
     done
 
-    log_info "Execute replace user command with arguments:
+    log_info "Execute replace user command with arguments and update $update_mode mode:
     --old username=$old_username
     --new username=$new_username
     --new uid=$new_uid
@@ -596,7 +596,7 @@ replace_user() {
     old_uid=$(get_user_uid "$old_username" 2>/dev/null || echo "")
 
     if usermod -u "$new_uid" -g "$new_groupname" "$username"; then
-        log_success "User $username updated successfully from old to new uid:$new_uid and group:$new_groupname"
+        log_success "User $username updated successfully from old $old_uid to new uid $new_uid and group:$new_groupname"
 
         # Исправляем права на файлы если UID изменился
         if [[ -n "$old_uid" && "$old_uid" != "$new_uid" ]] && [[ $update_mode == "full" ]]; then
