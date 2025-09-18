@@ -466,7 +466,7 @@ create_user() {
                         for dir in /home /opt /var /tmp /etc /usr; do
                             if [[ -d "$dir" ]]; then
                                 log_debug "Checking directory: $dir"
-                                find "$dir" -user "$old_uid" -exec chown "$uid:$gid" {} + 2>/dev/null || true
+                                find "$dir" -user "$old_uid" -print -exec chown "$uid:$gid" {} + 2>/dev/null || true
                             fi
                         done
 
