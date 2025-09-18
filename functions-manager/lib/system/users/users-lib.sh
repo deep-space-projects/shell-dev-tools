@@ -429,13 +429,13 @@ create_user() {
                 return 1
                 ;;
             update)
-                if [[ ! $update_mode =~ ^(just|full)$ ]]
+                if [[ ! $update_mode =~ ^(just|full)$ ]]; then
                     log_error "Unknown or undefined update mode: $update_mode"
                     return 1
                     ;;
                 fi
                 
-                log_info "User $user_name already exists, attempting to update"
+                log_info "User $username already exists, attempting to update"
                 
                 if ! command -v usermod >/dev/null 2>&1; then
                     log_error "\$(usermod) not available!"
@@ -450,8 +450,8 @@ create_user() {
                     log_success "User updated successfully"
             
                     # Исправляем права на файлы если UID изменился
-                    if [[ -n "$old_uid" && "$old_uid" != "$user_id" ]] && [[ $update_mode == "full" ]]; then
-                        log_info "User UID changed from $old_uid to $user_id - fixing file ownership"
+                    if [[ -n "$old_uid" && "$old_uid" != "$uid" ]] && [[ $update_mode == "full" ]]; then
+                        log_info "User UID changed from $old_uid to $uid - fixing file ownership"
 
                         local gid=$(get_group_uid $groupname)
 
@@ -504,7 +504,7 @@ create_user() {
                 create_user_with_useradd $username $uid $groupname
                 ;;
             "alpine")
-                if command -v adduser >/dev/null 2>&1; then
+                if ! command -v adduser >/dev/null 2>&1; then
                     log_error "\$(adduser) function not found in $os_family family system!"
                     return 1
                 fi
@@ -518,7 +518,7 @@ create_user() {
         esac
     fi
 
-    log_success "Successfully created $uid:$gid under alias $username:$groupname"
+    log_success "Successfully created user: $username with UID: $uid in group: $groupname"
 }
 
 # Создание пользователя с помощью useradd
