@@ -536,11 +536,6 @@ replace_user() {
         return 1
     fi
 
-    if is_user_exists $new_username; then
-        log_error "New user name $new_username already exists"
-        return 1
-    fi
-
     if [[ -z "$new_groupname" ]] || [[ ! "$new_groupname" =~ ^[a-zA-Z][a-zA-Z0-9_-]+$ ]]; then
         log_error "New group name $new_groupname is required"
         return 1
@@ -572,6 +567,10 @@ replace_user() {
         return 1
     fi
 
+    # Получаем старый UID
+    local old_uid
+    old_uid=$(get_user_uid "$old_username")
+
     # изменяем старое имя пользователя на новое (теперь у )
     if [[ "$new_username" != "$old_username" ]]; then
 
@@ -590,10 +589,6 @@ replace_user() {
 
     # обозначаем что теперь у нас ОДИН username и два разных uid, которые требуется заменить
     local username=$new_username
-
-    # Получаем старый UID
-    local old_uid
-    old_uid=$(get_user_uid "$old_username" 2>/dev/null || echo "")
 
     if usermod -u "$new_uid" -g "$new_groupname" "$username"; then
         log_success "User $username updated successfully from old $old_uid to new uid $new_uid and group:$new_groupname"
