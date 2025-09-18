@@ -462,7 +462,7 @@ create_user() {
                         log_info "Updating file ownership from UID $old_uid to $uid:$gid"
 
                         # Обновляем права в основных директориях
-                        for dir in /home /opt /var /tmp /etc /usr; do
+                        for dir in /home /opt /var /tmp /etc /usr /data; do
                             if [[ -d "$dir" ]]; then
                                 log_debug "Checking directory: $dir"
                                 find "$dir" -user "$old_uid" -print -exec chown "$uid:$gid" {} + 2>/dev/null || true
