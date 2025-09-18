@@ -407,6 +407,11 @@ create_user() {
         esac
     done
 
+    log_info "Execute create user command with arguments:
+    --username=$username
+    --uid=$uid
+    --new group=$groupname"
+
     if [[ -z "$username" ]] || [[ ! "$username" =~ ^[a-zA-Z][a-zA-Z0-9_-]+$ ]]; then
         log_error "User name is required"
         return 1
@@ -482,7 +487,6 @@ replace_user() {
     local new_groupname=""
     local new_gid=""
 
-
     while [ $# -gt 0 ]; do
         case $1 in
             --update-mode=*)
@@ -510,6 +514,12 @@ replace_user() {
                 ;;
         esac
     done
+
+    log_info "Execute replace user command with arguments:
+    --old username=$old_username
+    --new username=$new_username
+    --new uid=$new_uid
+    --new group=$new_groupname"
 
     if [[ -z "$old_username" ]] || [[ ! "$old_username" =~ ^[a-zA-Z][a-zA-Z0-9_-]+$ ]]; then
         log_error "Old user name $old_username is required"
@@ -616,7 +626,7 @@ replace_user() {
         return 1
     fi
 
-    log_success "Successfully created user: $username with UID: $new_uid in group: $new_groupname"
+    log_success "Successfully replaced user $old_username to $username with UID $new_uid in group $new_groupname"
 }
 
 # Создание пользователя с помощью useradd
