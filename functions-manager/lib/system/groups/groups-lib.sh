@@ -48,7 +48,7 @@ is_group_exists() {
     return $?
 }
 
-function create_group() {
+create_group() {
     local fail_on_exists="false"
     local groupname=""
     local uid=""

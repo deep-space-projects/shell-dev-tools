@@ -370,7 +370,7 @@ get_user_info() {
 }
 
 # Создать пользователя или обработать кейс с уже существующим пользователем (платформо-независимо)
-function create_user() {
+create_user() {
     local on_exist_mode="return"
     local update_mode=""
     local username=""
