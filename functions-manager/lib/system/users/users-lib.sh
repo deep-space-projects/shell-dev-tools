@@ -591,10 +591,16 @@ replace_user() {
         # Исправляем права на файлы если UID изменился
         if [[ -n "$old_uid" && "$old_uid" != "$new_uid" ]] && [[ $update_mode == "full" ]]; then
             log_info "User UID changed from $old_uid to $new_uid - fixing file ownership"
-            log_info "Updating file ownership from UID $old_uid to $new_uid:$new_gid"
 
             # Обновляем права в основных директориях
-            for dir in /home /opt /var /tmp /etc /usr /data; do
+            # Используем переменную CHOWN_DIRS, если пуста - берем значения по умолчанию
+            local chown_dirs="${USERS_CMD_REPLACE_CHOWN_DIRS:-/home,/opt,/var,/tmp,/etc,/usr,/data}"
+            # Заменяем запятые на пробелы
+            chown_dirs="${chown_dirs//,/ }"
+
+            log_info "Updating file ownership from UID $old_uid to $new_uid:$new_gid, for root dirs: ${chown_dirs}"
+
+            for dir in ${chown_dirs}; do
                 if [[ -d "$dir" ]]; then
                     log_debug "Checking directory: $dir"
                     find "$dir" -user "$old_uid" -print -exec chown "$new_uid:$new_gid" {} + 2>/dev/null || true
