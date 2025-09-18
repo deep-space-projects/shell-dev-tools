@@ -369,6 +369,196 @@ get_user_info() {
     return 0
 }
 
+# Создать пользователя или обработать кейс с уже существующим пользователем (платформо-независимо)
+function create_user() {
+    local on_exist_mode="return"
+    local update_mode=""
+    local username=""
+    local uid=""
+    local groupname=""
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            --on-exist=*)
+                on_exist_mode="${1#*=}"
+                shift
+                ;;
+            --update-mode=*)
+                update_mode="${1#*=}"
+                shift
+                ;;
+            -*)
+                echo "Unknown option: $1" >&2
+                return 1
+                ;;
+            *)
+                if [[ -z "$username" ]]; then
+                    username="$1"
+                elif [[ -z "$uid" ]]; then
+                    uid="$1"
+                elif [[ -z "$groupname" ]]; then
+                    groupname="$1"
+                else
+                    echo "Too many arguments" >&2
+                    return 1
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    if [[ -z "$username" ]] || [[ ! "$username" =~ ^[a-zA-Z][a-zA-Z0-9_-]+$ ]]; then
+        log_error "User name is required"
+        return 1
+    fi
+
+    if [[ -z "$uid" ]] || [[ ! "$uid" =~ ^[1-9][0-9]{0,4}$ ]] ; then
+        log_error "User UID is required"
+        return 1
+    fi
+
+    if [[ -z "$groupname" ]] || [[ ! "$groupname" =~ ^[a-zA-Z][a-zA-Z0-9_-]+$ ]]; then
+        log_error "Group name is required"
+        return 1
+    fi
+
+    if is_user_exists "$username"; then
+        case $on_exist_mode in
+            fail)
+                log_error "User already exists: $username"
+                return 1
+                ;;
+            update)
+                if [[ ! $update_mode =~ ^(just|full)$ ]]
+                    log_error "Unknown or undefined update mode: $update_mode"
+                    return 1
+                    ;;
+                fi
+                
+                log_info "User $user_name already exists, attempting to update"
+                
+                if ! command -v usermod >/dev/null 2>&1; then
+                    log_error "\$(usermod) not available!"
+                    return 1
+                fi
+            
+                # Получаем старый UID
+                local old_uid
+                old_uid=$(get_user_uid "$username" 2>/dev/null || echo "")
+
+                if usermod -u "$uid" -g "$groupname" "$username"; then
+                    log_success "User updated successfully"
+            
+                    # Исправляем права на файлы если UID изменился
+                    if [[ -n "$old_uid" && "$old_uid" != "$user_id" ]] && [[ $update_mode == "full" ]]; then
+                        log_info "User UID changed from $old_uid to $user_id - fixing file ownership"
+
+                        local gid=$(get_group_uid $groupname)
+
+                        if [[ -z "$gid" ]] || [[ ! "$gid" =~ ^[1-9][0-9]{0,4}$ ]] ; then
+                            log_error "Group UID is undefined"
+                            return 1
+                        fi
+
+                        log_info "Updating file ownership from UID $old_uid to $uid:$gid"
+
+                        # Обновляем права в основных директориях
+                        for dir in /home /opt /var /tmp /etc /usr; do
+                            if [[ -d "$dir" ]]; then
+                                log_debug "Checking directory: $dir"
+                                find "$dir" -user "$old_uid" -exec chown "$uid:$gid" {} + 2>/dev/null || true
+                            fi
+                        done
+
+                        log_success "File ownership from $old_uid to $uid:$gid update completed"
+                    else
+                        log_warning "Update user $uid proceed, but not in full-mode. That means some system files could leave under $old_uid ownership!"
+                    fi
+                else
+                    log_error "Failed to update user $uid with \$(usermod)!"
+                    return 1
+                fi            
+                ;;
+            return)
+                log_info "User already exists: $username"
+                return 0
+                ;;
+            *)
+                ;;
+        esac
+    else
+        local os_family=$(detect_os_family)
+
+        if [[ -z "$os_family" ]]; then
+            log_error "Undefined OS"
+            return 1
+        fi
+
+        case "$os_family" in
+            "debian"|"rhel")
+                if ! command -v useradd >/dev/null 2>&1; then
+                    log_error "\$(useradd) function not found in $os_family family system!"
+                    return 1
+                fi
+
+                create_user_with_useradd $username $uid $groupname
+                ;;
+            "alpine")
+                if command -v adduser >/dev/null 2>&1; then
+                    log_error "\$(adduser) function not found in $os_family family system!"
+                    return 1
+                fi
+
+                create_user_with_adduser $username $uid $groupname
+                ;;
+            *)
+                log_error "Unknown OS family: $os_family"
+                return 1
+                ;;
+        esac
+    fi
+
+    log_success "Successfully created $uid:$gid under alias $username:$groupname"
+}
+
+# Создание пользователя с помощью useradd
+create_user_with_useradd() {
+    local user_name="$1"
+    local user_id="$2"
+    local group_name="$3"
+
+    log_debug "Using useradd to create user"
+
+    # Пытаемся создать с домашней директорией и bash
+    if useradd -u "$user_id" -g "$group_name" -m -s /bin/bash "$user_name" 2>/dev/null; then
+        log_success "User created with home directory: $user_name"
+        return 0
+    # Если не получилось, создаем без домашней директории
+    elif useradd -u "$user_id" -g "$group_name" "$user_name"; then
+        log_success "User created without home directory: $user_name"
+        return 0
+    else
+        log_error "Failed to create user with useradd"
+        return 1
+    fi
+}
+
+# Создание пользователя с помощью adduser (BusyBox)
+create_user_with_adduser() {
+    local user_name="$1"
+    local user_id="$2"
+    local group_name="$3"
+
+    log_debug "Using adduser (BusyBox) to create user"
+    if adduser -u "$user_id" -G "$group_name" -D -s /bin/bash "$user_name"; then
+        log_success "User created with adduser: $user_name"
+        return 0
+    else
+        log_error "Failed to create user with adduser"
+        return 1
+    fi
+}
+
 export -f get_user_info get_user_home get_user_shell get_user_uid get_user_gid
 export -f is_user_exists is_user_in_group
 export -f switch_user prepare_user_environment

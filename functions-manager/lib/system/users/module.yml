@@ -9,7 +9,7 @@ metadata:
 specification:
   module:
     dependencies:
-      modules: [ logger, os ]
+      modules: [ logger, os, groups ]
 
     commands:
       # ---------------
@@ -58,6 +58,12 @@ specification:
         function: "prepare_user_environment"
         description: "Prepare directory for user"
         usage: "users prepare-env <username> <flag-create-home>"
+
+      - name: "create"
+        function: "create_user"
+        description: "Create new user or implement logic depends on existing mode"
+        usage: "users create --on-exist=(fail|update|return) --update-mode=(just|full) <username> <uid> <groupname>"
+
 
     files:
       - "users-lib.sh"

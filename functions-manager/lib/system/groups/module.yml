@@ -19,11 +19,15 @@ specification:
         description: "Get group uid"
         usage: "groups get-uid <groupname>"
 
-      # Group management
       - name: "exists"
         function: "is_group_exists"
         description: "Is group exists"
         usage: "groups exists <groupname>"
+
+      - name: "create"
+        function: "create_group"
+        description: "Create group with uid and name (both required)"
+        usage: "groups create --fail-on-exists <groupname> <uid>"
 
     files:
       - "groups-lib.sh"
