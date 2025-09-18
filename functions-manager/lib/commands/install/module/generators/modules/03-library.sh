@@ -152,7 +152,7 @@ process_file_by_type() {
     case "$file_name" in
         *-lib.sh)
             # Библиотечный файл - проверяем синтаксис
-            if ! bash -n "$file_path" 2>/dev/null; then
+            if ! bash -n "$file_path"; then
                 log_error "Library file has syntax errors: $file_name"
                 return 1
             fi
@@ -160,7 +160,7 @@ process_file_by_type() {
             ;;
         *.sh)
             # Обычный shell скрипт - проверяем синтаксис
-            if ! bash -n "$file_path" 2>/dev/null; then
+            if ! bash -n "$file_path"; then
                 log_error "Script file has syntax errors: $file_name"
                 return 1
             fi

@@ -432,7 +432,6 @@ create_user() {
                 if [[ ! $update_mode =~ ^(just|full)$ ]]; then
                     log_error "Unknown or undefined update mode: $update_mode"
                     return 1
-                    ;;
                 fi
                 
                 log_info "User $username already exists, attempting to update"
