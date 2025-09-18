@@ -114,7 +114,7 @@ create_group() {
             create_group_with_groupadd $groupname $uid
             ;;
         "alpine")
-            if command -v addgroup >/dev/null 2>&1; then
+            if ! command -v addgroup >/dev/null 2>&1; then
                 log_error "\$(addgroup) function not found in $os_family family system!"
                 return 1
             fi
