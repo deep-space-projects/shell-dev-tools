@@ -1,0 +1,38 @@
+version: 1.0.0
+
+metadata:
+  name: "envs"
+  description: "Environment variables management"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    dependencies:
+      modules: [ logger ]
+
+    commands:
+      # ---------------
+      # Envs
+      - name: "check"
+        function: "check_env_var"
+        description: "Check environment variable"
+        usage: "envs check [--fail] <varname>"
+
+      - name: "check-all"
+        function: "check_env_vars"
+        description: "Check environment variables"
+        usage: "os check-all [--fail] <varname-1> ... <varname-n>"
+
+      - name: "set"
+        function: "set_env_var"
+        description: "Set environment variable"
+        usage: "envs set [--no-overwrite] --name=<name> --value=<value> --scope=<scope>"
+
+      - name: "set-quite"
+        function: "set_env_var_quite"
+        description: "Set environment variable with default flags"
+        usage: "envs set-quite <name> <value> <scope>"
+
+    files:
+      - "env-lib.sh"

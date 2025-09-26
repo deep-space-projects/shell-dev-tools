@@ -1,0 +1,49 @@
+version: 1.0.0
+
+metadata:
+  name: "modes"
+  description: "Environment variables management"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    dependencies:
+      modules: [ logger, env ]
+
+    commands:
+      # ---------------
+      # Execution modes
+      - name: "exec-mode current"
+        function: "get_current_exec_mode"
+        description: "Get current execution mode"
+        usage: "modes exec-mode current"
+
+      - name: "exec-mode get"
+        function: "get_exec_mode_name_by_code"
+        description: "Get execution mode by code"
+        usage: "modes exec-mode get <code>"
+
+      - name: "exec-mode set"
+        function: "set_exec_mode"
+        description: "Set execution mode by code or name"
+        usage: "modes exec-mode set <code/name>"
+
+      # Error Policy
+      - name: "err-policy current"
+        function: "get_current_error_policy"
+        description: "Get current error policy"
+        usage: "modes err-policy current"
+
+      - name: "err-policy get"
+        function: "get_error_policy_name_by_code"
+        description: "Get error policy by code"
+        usage: "modes err-policy get <code>"
+
+      - name: "err-policy set"
+        function: "set_error_policy"
+        description: "Set error policy by code or name"
+        usage: "modes exec-mode set <code/name>"
+
+    files:
+      - "modes-lib.sh"

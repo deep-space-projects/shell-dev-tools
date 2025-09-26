@@ -1,0 +1,93 @@
+version: 1.0.0
+
+metadata:
+  name: "tlog"
+  description: "Universal logging system with colors and levels"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    commands:
+      - name: "debug"
+        function: "log_debug"
+        description: "Log debug message"
+        usage: "tlog debug <message>"
+
+      - name: "info"
+        function: "log_info"
+        description: "Log info message"
+        usage: "tlog info <message>"
+
+      - name: "success"
+        function: "log_success"
+        description: "log_success message"
+        usage: "tlog_success <message>"
+
+      - name: "warning"
+        function: "log_warning"
+        description: "Log warning message"
+        usage: "tlog warning <message>"
+
+      - name: "error"
+        function: "log_error"
+        description: "Log error message"
+        usage: "tlog error <message>"
+
+      - name: "header"
+        function: "log_header"
+        description: "Log header message"
+        usage: "tlog header <message>"
+
+      - name: "step"
+        function: "log_step"
+        description: "Log step message"
+        usage: "tlog step <message>"
+
+      - name: "set-level"
+        function: "logger_set_level"
+        description: "Set logging level"
+        usage: "tlog set-level <DEBUG|INFO|SUCCESS|WARNING|ERROR>"
+
+      - name: "get-level"
+        function: "log_current_level"
+        description: "Get logging level"
+        usage: "tlog get-level>"
+
+      - name: "should-log"
+        function: "should_log"
+        description: "Should log level"
+        usage: "tlog should-log <level>"
+
+      - name: "get-max-level"
+        function: "log_max_level_code"
+        description: "Get max logging level code"
+        usage: "tlog get-max-level>"
+
+      - name: "get-min-level"
+        function: "log_min_level_code"
+        description: "Get min logging level code"
+        usage: "tlog get-min-level>"
+
+      - name: "filter level"
+        function: "log_filter_by_level"
+        description: "Filter log messages by level"
+        usage: "tlog filter level <DEBUG|INFO|SUCCESS|WARNING|ERROR>"
+
+      - name: "f level"
+        function: "log_filter_by_level"
+        description: "Filter log messages by level"
+        usage: "tlog f level <DEBUG|INFO|SUCCESS|WARNING|ERROR>"
+
+      - name: "filter stdout"
+        function: "log_filter_stdout"
+        description: "Filter log messages by stdout"
+        usage: "tlog f stdout (include|exclude)>"
+
+      - name: "f stdout"
+        function: "log_filter_stdout"
+        description: "Filter log messages by stdout"
+        usage: "tlog f stdout (include|exclude)>"
+
+    files:
+      - "logger-lib.sh"

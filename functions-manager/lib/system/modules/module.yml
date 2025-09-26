@@ -1,0 +1,26 @@
+version: 1.0.0
+
+metadata:
+  name: "modules"
+  description: "Module execution system with error handling"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    dependencies:
+      modules: [ logger, operations ]
+
+    commands:
+      - name: "execute"
+        function: "execute_module"
+        description: "Execute a single module"
+        usage: "execute <module_path> [args...]"
+
+      - name: "execute-dir"
+        function: "execute_modules_in_directory"
+        description: "Execute all modules in directory"
+        usage: "execute-dir <directory> [args...]"
+
+    files:
+      - "modules-lib.sh"

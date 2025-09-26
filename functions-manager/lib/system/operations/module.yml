@@ -1,0 +1,29 @@
+version: 1.0.0
+
+metadata:
+  name: "ops"
+  description: "Environment variables management"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    dependencies:
+      modules: [ logger, modes ]
+
+    commands:
+      # ---------------
+      # Handle operations results
+      - name: "handle"
+        function: "handle_operation_result"
+        description: "Handle operation results following error policy"
+        usage: "ops handle --operation=<operation-name> --error-message=<error-message> --exit-code=<exit-code> --error-policy=<error-policy>"
+
+      - name: "handle-quite"
+        function: "handle_operation_error_quite"
+        description: "Handle operation errors following error policy"
+        usage: "ops handle <operation-name> <error-message> <exit-code>"
+
+
+    files:
+      - "operations-lib.sh"

@@ -1,0 +1,77 @@
+version: 1.0.0
+
+metadata:
+  name: "users"
+  description: "Cross-platform system for user management"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    dependencies:
+      modules: [ logger, os, groups ]
+
+    commands:
+      # ---------------
+      # User management
+      - name: "exists"
+        function: "is_user_exists"
+        description: "Check if user exists"
+        usage: "users exists <username>"
+
+      - name: "get-info"
+        function: "get_user_info"
+        description: "Get user information"
+        usage: "users get-info <username>"
+
+      - name: "get-home"
+        function: "get_user_home"
+        description: "Get user home directory"
+        usage: "users get-home <username>"
+
+      - name: "get-shell"
+        function: "get_user_shell"
+        description: "Get user shell directory"
+        usage: "users get-shell <username>"
+
+      - name: "get-uid"
+        function: "get_user_uid"
+        description: "Get user uid"
+        usage: "users get-uid <username>"
+
+      - name: "get-name"
+        function: "get_username_by_uid"
+        description: "Get username by uid"
+        usage: "users get-name <uid>"
+
+      - name: "get-gid"
+        function: "get_user_gid"
+        description: "Get user gid"
+        usage: "users get-gid <username>"
+
+      - name: "in-group"
+        function: "is_user_in_group"
+        description: "Is user in group"
+        usage: "users get-gid <username> <groupname>"
+
+      - name: "switch"
+        function: "switch_user"
+        description: "Switch to user and execute command"
+        usage: "users switch <username> <command>"
+
+      - name: "prepare-env"
+        function: "prepare_user_environment"
+        description: "Prepare directory for user"
+        usage: "users prepare-env <username> <flag-create-home>"
+
+      - name: "create"
+        function: "create_user"
+        description: "Create new user or implement logic depends on existing mode"
+        usage: "users create --on-exist=(fail|update|return) --update-mode=(just|full) <username> <uid> <groupname>"
+
+      - name: "replace"
+        function: "replace_user"
+        description: "Replace old user with new one"
+        usage: "users replace --update-mode=(just|full) <username-old> <username> <uid> <groupname>"
+    files:
+      - "users-lib.sh"

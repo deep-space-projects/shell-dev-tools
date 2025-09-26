@@ -1,0 +1,28 @@
+version: 1.0.0
+
+metadata:
+  name: "commands"
+  description: "Cross-platform system for user management"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    dependencies:
+      modules: [ logger, scripts ]
+
+    commands:
+      # ---------------
+      # User management
+      - name: "exists"
+        function: "is_command_exists"
+        description: "Check if command exists"
+        usage: "commands exists <command>"
+
+      - name: "exec"
+        function: "execute_command"
+        description: "Execute command with or without timeout"
+        usage: "commands exec <username>"
+
+    files:
+      - "commands-lib.sh"

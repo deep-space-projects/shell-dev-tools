@@ -1,0 +1,43 @@
+version: 1.0.0
+
+metadata:
+  name: "archy"
+  description: "Archive utilities management"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    dependencies:
+      modules: [ logger ]
+
+    commands:
+      # ---------------
+      # Archive management
+      # stream going in < archy
+      - name: "unpack"
+        function: "unarchive_file"
+        description: "Unarchive file"
+        usage: "archy < --strip=<number> --rm --output-dir=<dir> <archive-file>"
+
+      - name: "u"
+        function: "unarchive_file"
+        description: "Unarchive file"
+        usage: "archy < --strip=<number> --rm --output-dir=<dir> <archive-file>"
+
+        # stream going out > of archy
+      - name: "pack"
+        function: "archive_file"
+        description: "Archive file"
+        usage: "archy pack --strip=<number> --rm --output-dir=<dir> <archive-file>"
+
+      - name: "p"
+        function: "archive_file"
+        description: "Archive file"
+        usage: "archy pack --strip=<number> --rm --output-dir=<dir> <archive-file>"
+
+    files:
+      - "archive-lib.sh"
+
+    binaries:
+      - "drivers"

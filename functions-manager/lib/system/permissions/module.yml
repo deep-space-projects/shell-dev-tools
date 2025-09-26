@@ -1,0 +1,21 @@
+version: 1.0.0
+
+metadata:
+  name: "permissions"
+  description: "Advanced permissions management with flags and validation"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    dependencies:
+      modules: [ logger, fs ]
+
+    commands:
+      - name: "setup"
+        function: "setup_permissions"
+        description: "Set up file/directory permissions with advanced flags"
+        usage: "setup --path=<path> --owner=<owner> --perms=<perms> [--flags=<flags>]"
+
+    files:
+      - "permissions-lib.sh"

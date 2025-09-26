@@ -1,0 +1,40 @@
+version: 1.0.0
+
+metadata:
+  name: "os"
+  description: "Operation system environment detection"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    commands:
+      # ---------------
+      # OS
+      - name: "is-supported"
+        function: "is_supported_os"
+        description: "Is operation system is supported list"
+        usage: "os is-supported [--fail] <osname>"
+
+      - name: "list"
+        function: "get_supported_os_list"
+        description: "Get supported operation system list"
+        usage: "os list"
+
+      - name: "detect"
+        function: "detect_os"
+        description: "Detect operating system"
+        usage: "os detect"
+
+      - name: "family"
+        function: "detect_os_family"
+        description: "Detect OS family (debian/rhel/alpine)"
+        usage: "os family"
+
+      - name: "is-mini"
+        function: "is_minimal_system"
+        description: "Detect minimal system"
+        usage: "os is-mini <osname>"
+
+    files:
+      - "os-lib.sh"

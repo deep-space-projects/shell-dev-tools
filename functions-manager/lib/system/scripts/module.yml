@@ -1,0 +1,27 @@
+version: 1.0.0
+
+metadata:
+  name: "scripts"
+  description: "Operation system environment detection"
+  version: "1.0.0"
+  author: "dev-tools"
+
+specification:
+  module:
+    dependencies:
+      modules: [ logger, modes, commands ]
+
+    commands:
+      # ---------------
+      - name: "exec"
+        function: "execute_script"
+        description: "Execute script"
+        usage: "scripts exec --path=<path> --error-policy=<error-policy> --timeout=<timeout> --description=<description> --operation=<operation>"
+
+      - name: "exec-all"
+        function: "execute_scripts_in_directory"
+        description: "Execute script in directory"
+        usage: "scripts exec-all --path=<path> --error-policy=<error-policy> --timeout=<timeout> --pattern=<pattern> --operation=<operation>"
+
+    files:
+      - "scripts-lib.sh"
