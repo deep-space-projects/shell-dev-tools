@@ -210,7 +210,7 @@ __load_core_components() {
 ##
 __download_github_modules() {
     # Создаем временную директорию
-    local github_temp_dir="/tmp/dev-tools-install-$(whoami)-$$/vcs/github/${repo}/"
+    local github_temp_dir="/tmp/dev-tools-install-$(whoami)-$$/vcs/github/${repo}"
     mkdir -p "$github_temp_dir"
 
     local short_repo_name=$(basename "$repo")
