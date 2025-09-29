@@ -82,7 +82,7 @@ create_group() {
         return 1
     fi
 
-    if [[ -z "$uid" ]] || [[ ! "$uid" =~ ^[1-9][0-9]{0,4}$ ]] ; then
+    if [[ -z "$uid" ]] || [[ ! "$uid" =~ ^([1-9][0-9]{0,4}|0)$ ]] ; then
         log_error "Group UID is required"
         return 1
     fi
