@@ -9,7 +9,7 @@ metadata:
 specification:
   module:
     dependencies:
-      modules: [ logger, modes, commands ]
+      modules: [ logger, modes, commands, operations ]
 
     commands:
       # ---------------
