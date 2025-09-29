@@ -476,7 +476,7 @@ create_user() {
 
     if is_user_exists "$username"; then
 
-        if [[ $(get_user_uid $username) == $uid &&  $(get_user_gid $username) == $(get_group_uid $groupname) ]]
+        if [[ $(get_user_uid $username) == $uid &&  $(get_user_gid $username) == $(get_group_uid $groupname) ]]; then
             log_info "Current user already exists: $username"
             return 0
         fi
