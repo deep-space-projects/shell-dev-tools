@@ -243,7 +243,6 @@ __download_github_modules() {
     fi
 
     log_info "GitHub Entrypoint: $extracting_point"
-    tree $github_temp_dir
 
     # Добавляем извлеченную директорию к module_dirs
     if [[ -n "$extracting_point" ]]; then
