@@ -648,8 +648,15 @@ replace_user() {
 
         # Исправляем права на файлы если UID изменился
         if [[ -n "$old_uid" && "$old_uid" != "$new_uid" ]] && [[ $update_mode == "full" ]]; then
-            log_info "User UID changed from $old_uid to $new_uid - fixing file ownership"
+            log_info "User UID changed from $old_uid to $new_uid"
 
+            tlog step 1 "Create home dir"
+            if ! usermod -d /home/$new_username -m $new_username; then
+                log_error "Failed to create user $new_uid home dir with \$(usermod -d)!"
+                return 1
+            fi
+
+            tlog step 2 "Fixing file ownership"
             # Обновляем права в основных директориях
             # Используем переменную CHOWN_DIRS, если пуста - берем значения по умолчанию
             local chown_dirs="${USERS_CMD_REPLACE_CHOWN_DIRS:-/home,/opt,/var,/tmp,/etc,/usr,/data,/run}"
